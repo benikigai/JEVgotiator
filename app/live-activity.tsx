@@ -42,7 +42,7 @@ export default function LiveActivity() {
   if (showTrace && search) return <DecisionTrace result={search} onBack={() => setShowTrace(false)}/>;
 
   return <>
-    <section className="page-heading compact"><div><span className="eyebrow">THE CONVERSATION, LIVE</span><h1>Text it. Watch it work.</h1><p>Messages, tool activity, and the evidence behind the shortlist.</p></div><button className="secondary" onClick={() => setRefresh(value => value + 1)}><RefreshCw size={15}/>Refresh</button></section>
+    <section className="page-heading compact"><div><span className="eyebrow">Live conversation</span><h1>Text it. Watch it work.</h1><p>Messages, tool activity, and the evidence behind the shortlist.</p></div><button className="secondary" onClick={() => setRefresh(value => value + 1)}><RefreshCw size={15}/>Refresh</button></section>
     <div className="activity-connect"><div><Radio size={22}/><div><strong>Ben’s demo line: +1 (415) 605-7073</strong><p>Each teammate uses their assigned Photon recipient. Text /reset to start a fresh demo.</p></div></div><span className={`activity-status ${data?.status === "live" && !error ? "connected" : ""}`}>{error ? "Connection interrupted" : data?.status === "live" ? "Connected · updates every 3s" : data?.status === "unconfigured" ? "Connection being configured" : data?.status === "unavailable" ? "Eve unavailable" : "Connecting…"}</span></div>
     {error && <div className="notice" role="alert">{error} {data && "The last received activity remains below."}</div>}
     {data?.warning && <div className="notice">{data.warning}</div>}
