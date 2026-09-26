@@ -6,13 +6,13 @@ Tell JEVcar what car you need. It searches listings in San Francisco, ranks the 
 
 ## The product
 
-1. Send a request through the API, a small web interface, or Photon iMessage.
+1. Send a request from a client agent through the API, a small web interface, or Photon iMessage.
 2. Answer only the questions needed to turn the request into a confirmed, structured buyer brief.
 3. Filter the car database by budget, location, mileage, year, and other hard requirements.
 4. Let Jev score how well the eligible cars match the buyer's preferences. Return up to five cars with evidence, unknowns, and source links.
 5. Pick one to three cars. Review and approve a contact and negotiation plan.
 6. The buying agent checks availability, contacts sellers, negotiates within approved limits, and compares quotes.
-7. Approve the exact car and final terms before any purchase action. Track inspection, purchase, and follow-up as separate states.
+7. Receive the negotiated quotes and choose the final car. Approve its exact terms before any purchase action. Track inspection, purchase, and follow-up as separate states.
 
 The database is an inventory of observed listings, not a claim to contain every car for sale in San Francisco. Advertised price, confirmed total price, and estimated total price remain distinct.
 
@@ -22,20 +22,25 @@ The database is an inventory of observed listings, not a claim to contain every 
 flowchart TD
     Buyer[Buyer] --> Channel[Web or Photon iMessage]
     Channel --> API[JEVcar API]
+    ClientAgent[Client agent] --> API
     API --> Clarify[Clarify and confirm buyer brief]
-    Clarify --> Filter[Code: hard eligibility filters]
-    Sources[Listing sources] --> Ingest[Chris: ingestion and normalization]
+    Clarify --> Filter[Filter 1: hard eligibility in code]
+    Retailer[Retailer listings] --> Ingest[Chris: ingestion and normalization]
+    Marketplace[Facebook Marketplace] --> Ingest
+    Dealers[Local car dealers] --> Ingest
     Prototype[Browserbase / Stagehand prototype] --> Ingest
     Ingest --> DB[(Car listings and evidence)]
     DB --> Filter
-    Filter --> Rank[Jev: preference scores]
+    Filter --> Rank[Filter 2: Jev scores and ranking]
     Rank --> Shortlist[Up to 5 cars with evidence]
     Shortlist --> Select[Buyer selects 1 to 3]
+    Shortlist -->|Revise preferences| Clarify
     Select --> ContactGate[Approve contact and negotiation scope]
     ContactGate --> Agent[Dara: durable buying-agent job]
     Agent --> Calls[Seller calls and quote collection]
     Calls --> Compare[Compare price, fees, condition, timing]
-    Compare --> PurchaseGate[Approve exact vehicle and final terms]
+    Compare --> FinalChoice[Return quotes: buyer chooses final car]
+    FinalChoice --> PurchaseGate[Approve exact vehicle and final terms]
     PurchaseGate --> Handoff[Purchase handoff and follow-up]
     Handoff --> Channel
     API <--> State[(Briefs, jobs, approvals, events)]
@@ -60,6 +65,7 @@ Ben owns changes to shared contracts after checking them with Chris and Dara. Ea
 
 - [BUILD-SPEC.md](BUILD-SPEC.md): scope, contracts, endpoints, ranking, jobs, approval states, build order and acceptance checks.
 - [Integration research](docs/integration-research.md): verified provider capabilities and unresolved integration choices.
+- [Team sketch interpretation](docs/team-sketch.md): rough-note flow, field mapping and uncertain handwriting.
 - [Car listing example](examples/car-listing.json), [buyer brief example](examples/search-brief.json), and [negotiation handoff example](examples/negotiation-job.json): synthetic fixtures for parallel development.
 
 Proposed implementation layout, to create as code is added:
@@ -82,7 +88,7 @@ Actual payment, financing, deposits, title transfer, and signatures are outside 
 
 ## Known gaps
 
-Chris's database technology, Dara's call provider and runtime, and the team's Browserbase prototype revision are not confirmed. Photon line setup and end-to-end messaging are untested. Earlier session checks verified TypeSafe inference and Vercel account access, but do not establish a deployed JEVcar integration.
+Chris's database technology, Dara's call provider and runtime, and the team's Browserbase prototype revision are not confirmed. Inventory sources in the diagram are planned; the sketch's retailer name needs confirmation. Photon line setup and end-to-end messaging are untested. Earlier session checks verified TypeSafe inference and Vercel account access, but do not establish a deployed JEVcar integration.
 
 ## Name shortlist
 

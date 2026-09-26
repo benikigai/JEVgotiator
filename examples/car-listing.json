@@ -8,6 +8,7 @@
   "model": "Corolla",
   "year": 2020,
   "trim": "LE",
+  "exterior_color": null,
   "body_type": "sedan",
   "fuel_type": "gasoline",
   "mileage_miles": 42000,

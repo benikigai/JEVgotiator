@@ -4,7 +4,7 @@ Date: September 26, 2026. Status: proposed integration contract for team review.
 
 ## 1. Scope and product boundary
 
-The buyer describes the car they need. JEVcar turns that request into a typed brief, filters a catalog, uses Jev to rank suitable cars, and hands one to three selected listings to Dara's negotiation workflow. The user sees the evidence behind recommendations and the current state of every external action.
+The buyer describes the car they need through a client agent, web client, or Photon iMessage. JEVcar turns that request into a typed brief, filters a catalog, uses Jev to rank suitable cars, and hands one to three selected listings to Dara's negotiation workflow. Quotes return to the buyer for a second decision: choose the final car. The user sees the evidence behind recommendations and the current state of every external action. The [team sketch interpretation](docs/team-sketch.md) records the source notes and uncertain handwriting.
 
 First demo: brief, filter, rank, selection, contact approval, one negotiation result, and a purchase handoff. Support a controlled test seller for the call. If a provider is unavailable, show a labeled replay or pending state. Never show a simulated call or purchase as completed live.
 
@@ -46,13 +46,15 @@ After clarification, show a short confirmation of requirements. Persist an immut
 | `original_request` | Buyer text, kept private |
 | `location` | City, region, country, scope; radius and center only if selected |
 | `budget` | `currency`, integer `max_amount_cents`, `basis: advertised_price | out_the_door` |
-| `required` | Nullable year bounds, max mileage in miles, make/model allowlists, body/fuel types, title and history requirements; explicit accepted evidence kinds per required history field |
+| `required` | Nullable year bounds, max mileage in miles, make/model allowlists, exterior colors, body/fuel types, title and history requirements; explicit accepted evidence kinds per required history field |
 | `preferences` | Buyer-readable criterion, stable ID, nonnegative weight; active weights sum to one |
 | `needed_by` | ISO date in `America/Los_Angeles`, or null; deadline to take possession, not listing age or merely signing |
 | `unknown_required_policy` | `exclude` for the first demo |
 | `assumptions`, `confirmed_at` | Assumptions shown to the buyer and confirmation timestamp |
 
 See [the synthetic brief](examples/search-brief.json). An empty allowlist means unconstrained. `null` means unknown or unspecified, never zero or false.
+
+The sketch's “black car” example maps to `required.exterior_colors: ["black"]` when confirmed as mandatory, or to a weighted preference when optional. Nearby unlabeled numbers are not automatically interpreted as mileage, price or year.
 
 ## 4. Chris's car listing contract
 
@@ -61,7 +63,7 @@ Use stable listing IDs with source identity and revision. One vehicle can have m
 | Field | Contract |
 | --- | --- |
 | Identity | `schema_version`, `listing_id`, `listing_version`, nullable `vehicle_id` and `vin` |
-| Vehicle | Nullable `make`, `model`, `year`, `trim`, `body_type`, `fuel_type`, `mileage_miles` |
+| Vehicle | Nullable `make`, `model`, `year`, `trim`, `exterior_color`, `body_type`, `fuel_type`, `mileage_miles` |
 | Photos | Array of source URLs and captions; empty when absent; no inferred condition from photos in v1 |
 | Price | Currency, nullable advertised price in cents, nullable confirmed out-the-door price, quote evidence, and any disclosed financing condition |
 | Location | City, region, country, nullable coordinates, location evidence |
@@ -74,7 +76,7 @@ Use stable listing IDs with source identity and revision. One vehicle can have m
 
 Every nullable or descriptive fact needs its provenance where available. `seller_claim`, `listing_text`, `history_report`, and `independent_verification` are different evidence kinds, not a universal confidence hierarchy. A seller claiming no accidents does not establish an independently verified clean history. `required.history_evidence_requirements` maps each constrained history field to an explicit list of accepted evidence kinds.
 
-The user's “CarMax history” field is preserved as `history_reports[].provider`; confirm whether the intended source is CarMax, CARFAX, or another report. A CarMax listing and a CARFAX report are different records. Never manufacture a report from listing text. An absent report stays absent.
+The handwritten history label appears to read CARFAX, clarifying the earlier verbal “CarMax history” reference. Represent report provenance explicitly with `history_reports[].provider`, such as `carfax`, rather than treating a retailer listing as a history report. Never manufacture a report from listing text. An absent report stays absent; access to a report provider is not yet verified.
 
 Validate ranges and units during ingestion. Do not map an unavailable price or mileage to zero. Keep private seller contact details in a restricted record referenced by `contact_ref`, outside public search responses and Jev prompts. Retain source URLs and timestamps for later rechecks.
 
@@ -82,10 +84,10 @@ See [the synthetic listing](examples/car-listing.json). The example uses reserve
 
 ## 5. Filter first, then score
 
-1. Apply city or approved radius, active status, advertised-price ceiling, mileage, year, and all other explicit required filters in code. Unknown required facts fail eligibility in v1. Historical evidence must meet the brief's evidence requirement.
+1. Filter 1 applies city or approved radius, active status, advertised-price ceiling, mileage, year, required exterior color, and all other explicit required filters in code. Unknown required facts fail eligibility in v1. Historical evidence must meet the brief's evidence requirement.
 2. For an out-the-door budget, an asking price below the cap is only a necessary condition. The total must come from an unexpired quote applicable to this buyer's registration/tax assumptions and financing choice. A listing-level total alone cannot prove eligibility. Unknown or inapplicable totals go in a separate `needs_verification` group with reason `price`; an applicable total above the cap is excluded. Known availability after `needed_by` also fails; unknown possession timing is provisional with reason `timing`. The buyer can inspect or select explicitly labeled provisional candidates for inquiries, but these never count as verified matches or purchase-ready cars. Other unknown hard requirements follow the brief's exclude policy.
 3. If more than 30 cars qualify, shortlist by deterministic textual match and explicit numeric preferences, with listing ID as the final stable tie-breaker. Return eligible count and candidate count. Measure candidate recall; Jev cannot recover excluded candidates.
-4. Score each candidate against a small set of atomic soft criteria. Examples: evidence of suitability for short city trips, support for cargo needs, and documented maintenance matching the buyer's stated preference. Do not infer mechanical safety, accident absence, or future reliability from make/model alone.
+4. Filter 2 uses Jev to score each candidate against a small set of atomic soft criteria. Examples: evidence of suitability for short city trips, support for cargo needs, and documented maintenance matching the buyer's stated preference. Do not infer mechanical safety, accident absence, or future reliability from make/model alone.
 5. Code combines normalized criterion scores using confirmed weights. With an ordinal rubric, normalize using its returned scale rather than assuming a 1-to-5 range. Confidence is diagnostic information, not a multiplier. Missing evidence is an explicit `unknown`; it contributes zero in v1, alongside a visible evidence-coverage count.
 6. Return up to five strict matches, fewer if fewer qualify, and a separate provisional group of at most five if requested. Include public listing snapshots, factor scores, evidence IDs, unknowns, rank, and warnings. Public and Jev input projections omit `contact_ref`, private contacts, buyer identifiers and unredacted source text. Sanitize excerpts before either projection; full ingestion records stay internal. Use fixed explanation templates and exact permitted evidence excerpts; do not ask Jev to invent a rationale.
 
@@ -93,11 +95,15 @@ Jev request: pinned model initially `jev-1.13.0`, one listing's relevant facts a
 
 Proposed search budget: 30 candidates, five concurrent scoring requests, eight seconds elapsed for ranking, and at most one retry for transient read-only failures within that deadline. Treat these as tuning targets. On failure, return deterministic eligible order labeled `unscored_fallback`; do not mix incomplete scores into a supposedly complete ranking. Confirm rate limits and measured latency before increasing concurrency.
 
+The intermediate count written in the sketch is unclear. The 30-candidate cap above is an engineering proposal, not a transcription or a user-approved scale requirement. Expose both the full Filter 1 count and the actual Jev candidate count, including whether the candidate cap reduced coverage.
+
 Cache criterion scores by model, prompt version, criterion definition, relevant brief fields, and listing snapshot hash. Changing weights alone can reuse scores and recompute in code; changing the criterion, vehicle facts, or model requires new scoring.
 
 ## 6. HTTP contract
 
 These are proposed routes, not currently running endpoints. Authenticated web/API sessions and bound Photon identities scope every search and job to its buyer. Internal catalog and agent routes use separate service credentials. No action trusts a client-supplied owner ID.
+
+Client agents use the same versioned JSON API with buyer-scoped credentials. Agent access to search does not automatically include seller contact or purchase authority. Photon is a channel adapter over these same operations, not a separate backend.
 
 | Route | Request or behavior | Response |
 | --- | --- | --- |
@@ -108,6 +114,7 @@ These are proposed routes, not currently running endpoints. Authenticated web/AP
 | `POST /v1/searches/:id/selections` | Result-set ID and one to three distinct listing IDs | Selection snapshot after freshness checks; no contact |
 | `POST /v1/negotiations` | Selection ID and proposed contact/offer scope | `201` draft job in `awaiting_contact_approval` |
 | `POST /v1/negotiations/:id/approve-contact` | Exact contact-plan bundle versions and buyer-approved limits | `202` with durable job ID and status URL; server creates bounded approval records atomically |
+| `POST /v1/negotiations/:id/final-selection` | One listing ID and exact quote ID/version from this negotiation | Recorded final choice and either `needs_verification` or a purchase handoff; no transaction |
 | `GET /v1/jobs/:id` | Buyer-scoped job | State, structured results, pending buyer action, event cursor |
 | `POST /v1/jobs/:id/cancel` | Expected job version | Cancellation recorded; any already-started action reported separately |
 | `POST /v1/webhooks/photon` | Authenticated provider event | ACK after durable intake; deduplication by provider identity |
@@ -129,6 +136,8 @@ Dara returns versioned events with `event_id`, `job_id`, `action_id`, monotonic 
 
 A quote includes vehicle/listing revision, seller, currency, asking/negotiated price, taxes, fees, add-ons, total, unknown components, conditions, expiration, and evidence. Record whether the total is seller-stated, estimated, or written and confirmed. Do not invent market comparables or call a price a bargain without a dated comparable source. Optimize among comparable quotes using the buyer's budget, conditions, timing, and preferences; preserve unresolved inspection and history questions.
 
+Send the quote comparison back through the buyer's channel before final selection. The buyer chooses one exact vehicle and quote, declines all, or revises the brief. Persist `final_selection` with listing version, quote ID/version and buyer identity; reject stale or expired quotes. Choosing a quote does not accept its terms or execute payment. Invalidate any previous final selection if its quote changes. If the buyer declines all, return to search without creating a purchase action.
+
 ## 8. Durable state and action boundaries
 
 ```mermaid
@@ -140,7 +149,9 @@ stateDiagram-v2
     Selected --> AwaitingContactApproval: Prepare plan
     AwaitingContactApproval --> Negotiating: Approve exact contact scope
     Negotiating --> QuoteReview: Quotes or unresolved questions
-    QuoteReview --> AwaitingPurchaseApproval: Exact vehicle and terms ready
+    QuoteReview --> FinalSelection: Buyer chooses one car and quote
+    QuoteReview --> Clarifying: Buyer revises request
+    FinalSelection --> AwaitingPurchaseApproval: Exact vehicle and terms verified
     AwaitingPurchaseApproval --> PurchaseHandoff: Demo stops here
     AwaitingPurchaseApproval --> PurchasePending: Future approved execution adapter
     PurchasePending --> Purchased: Verified transaction receipt
@@ -165,6 +176,8 @@ Bind conversation and sender identity to a buyer session. Preserve the originati
 
 Chris can adapt the reported Browserbase/Stagehand Facebook Marketplace prototype into ingestion. Pin its exact repository and revision, validate normalized output, and record failed or blocked fetches. Access challenges require operator handling, not bypass logic. A failed refresh must not erase the prior record or mark a car sold. Stop at approved listing collection; scraping does not authorize contacting sellers.
 
+The sketch groups retailer listings, Facebook Marketplace and local car dealers into the master database. Each source normalizes into the same `CarListing` contract and retains its own source identity. The handwritten retailer name is not confidently legible and remains unresolved. These are planned sources, not verified connected feeds.
+
 Browserbase's documented Jev action-selection work is a prototype with a linked PR stack. It is separate from JEVcar's listing scorer; the search API does not depend on that browser integration being released. Keep report retrieval, credentialed sessions, and private contacts outside the public listing response.
 
 ## 10. Build order and acceptance
@@ -187,7 +200,7 @@ Suggested three-minute demo: 0:00 buyer request and clarification; 0:30 filtered
 
 ## 11. Immediate decisions and handoff
 
-Ben: confirm Chris's database/query interface, Dara's call provider and worker requirements, the Photon line, the Browserbase prototype revision, and the intended history-report provider. Until then, the adapters and hosting choices above are proposals. Do not install providers or add parallel frameworks just to fill empty folders.
+Ben: confirm Chris's database/query interface, Dara's call provider and worker requirements, the Photon line, the Browserbase prototype revision, the retailer source name, and actual history-report access. Until then, the adapters and hosting choices above are proposals. Do not install providers or add parallel frameworks just to fill empty folders.
 
 First integration checkpoint: one synthetic brief plus five listing fixtures passes through Chris's query contract and Ben's ranker; Dara accepts one non-dispatchable negotiation job. Next checkpoint: replace each fixture boundary with verified live behavior and preserve the source-mode labels.
 
