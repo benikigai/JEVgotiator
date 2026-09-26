@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "search_id": "search_demo_001",
+  "brief_version": 1,
+  "original_request": "Find a small car in San Francisco under $20,000. I drive short city trips and need it within two weeks.",
+  "location": {
+    "city": "San Francisco",
+    "region": "CA",
+    "country": "US",
+    "scope": "city_only"
+  },
+  "budget": {
+    "currency": "USD",
+    "max_amount_cents": 2000000,
+    "basis": "advertised_price"
+  },
+  "required": {
+    "min_year": 2018,
+    "max_year": null,
+    "max_mileage_miles": 60000,
+    "makes": [],
+    "models": [],
+    "body_types": [],
+    "fuel_types": [],
+    "title_requirement": null,
+    "accident_requirement": null,
+    "history_evidence_requirements": {}
+  },
+  "preferences": [
+    {"id": "city_use", "criterion": "Evidence of suitability for short city trips and easy parking", "weight": 0.6},
+    {"id": "maintenance", "criterion": "Availability of documented maintenance records", "weight": 0.4}
+  ],
+  "needed_by": "2026-10-10",
+  "timezone": "America/Los_Angeles",
+  "unknown_required_policy": "exclude",
+  "assumptions": [
+    "Synthetic buyer confirmed that $20,000 is an advertised-price cap, excluding taxes and fees.",
+    "Synthetic buyer confirmed 2018 or newer and at most 60,000 miles during clarification.",
+    "Accident and title history may be unknown in search results and must be verified before purchase."
+  ],
+  "confirmed_at": "2026-09-26T20:00:00Z",
+  "mode": "synthetic"
+}

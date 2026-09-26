@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "job_id": "job_demo_001",
+  "job_version": 1,
+  "search_id": "search_demo_001",
+  "brief_version": 1,
+  "result_set_id": "results_demo_001",
+  "selection_id": "selection_demo_001",
+  "correlation_id": "request_demo_001",
+  "state": "awaiting_contact_approval",
+  "selected_listings": [
+    {"listing_id": "listing_demo_001", "listing_version": 1, "seller_id": "seller_demo_001"}
+  ],
+  "needed_by": "2026-10-10",
+  "questions": [
+    "Is this exact car still available?",
+    "What is the itemized out-the-door total and are any discounts conditional on financing?",
+    "Can you supply the VIN, title details, accident history and maintenance records?",
+    "Can the buyer arrange an independent inspection before committing?"
+  ],
+  "contact_plans": [{
+    "plan_id": "contact_plan_demo_001",
+    "version": 1,
+    "seller_id": "seller_demo_001",
+    "listing_ids": ["listing_demo_001"],
+    "contact_ref": null,
+    "channel": "voice",
+    "max_attempts": 1,
+    "expires_at": null,
+    "permitted_buyer_disclosure": [],
+    "nonbinding_offers_allowed": false,
+    "max_offer_cents": null,
+    "offer_basis": null,
+    "currency": "USD",
+    "contact_approval_id": null
+  }],
+  "purchase_approval_id": null,
+  "mode": "synthetic"
+}
