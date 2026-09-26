@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+const traceSchema = z.object({
+  outcome: z.enum(["scored", "not_requested", "failed"]), request_sent: z.boolean(),
+  requested_model: z.string(), returned_model: z.string().nullable(),
+  buyer_request: z.string(), hard_filter_role: z.string(), algorithm: z.string(), note: z.string(),
+  candidates: z.array(z.object({ listing_id: z.string(), label: z.string(), asking_price: z.number().nullable(), mileage: z.number().nullable(), state_path: z.string(), model_context: z.record(z.string(), z.union([z.string(), z.number(), z.null()])) })).max(30),
+  questions: z.array(z.object({ question_id: z.string(), listing_id: z.string(), factor: z.string(), type: z.literal("noul"), instructions: z.string(), criteria: z.object({ true: z.string(), false: z.string() }) })).max(300),
+  answers: z.array(z.object({ question_id: z.string(), listing_id: z.string(), type: z.literal("noul").nullable(), noul: z.number().nullable(), valid: z.boolean(), used: z.boolean() })).max(300),
+  composition: z.array(z.object({ listing_id: z.string(), rank: z.number(), final_score: z.number(), factors: z.array(z.object({ name: z.string(), source: z.enum(["jev", "code"]), score: z.number(), weight: z.number(), normalized_weight: z.number(), contribution: z.number() })) })).max(30),
+});
+
 export const briefSchema = z.object({
   query: z.string().min(5).max(2000), budget: z.number().int().min(1000).max(500000),
   budget_basis: z.enum(["advertised_price", "out_the_door"]), city: z.literal("San Francisco"), make: z.literal("Tesla"),
@@ -18,7 +28,7 @@ export const searchResponseSchema = z.object({
     score: z.number().nullable(), reasons: z.array(z.string()), unknowns: z.array(z.string()), verification_required: z.boolean(),
   })).max(5),
   counts: z.object({ total: z.number(), eligible: z.number(), candidates: z.number(), scored: z.number(), shown: z.number() }),
-  ranking: z.object({ mode: z.enum(["live_jev", "unscored_fallback"]), model: z.string().nullable(), warning: z.string().nullable(), latency_ms: z.number(), estimated_cost_usd: z.number() }),
+  ranking: z.object({ mode: z.enum(["live_jev", "unscored_fallback"]), model: z.string().nullable(), warning: z.string().nullable(), latency_ms: z.number(), estimated_cost_usd: z.number(), input_tokens: z.number().optional(), trace: traceSchema.optional() }),
   catalog: z.object({ mode: z.enum(["live", "synthetic", "mixed"]), warnings: z.array(z.string()) }),
 });
 export type SearchSnapshot = z.infer<typeof searchResponseSchema>;
