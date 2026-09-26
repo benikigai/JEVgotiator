@@ -11,10 +11,9 @@ const time = (value: string | null | undefined) => value ? new Date(value).toLoc
 const toolLabel = (name: string) => ({ clarify_car_request: "Clarify buyer brief", search_teslas: "Filter inventory and ask Jev", prepare_deal_plan: "Prepare selected-car plan" }[name] || name.replaceAll("_", " "));
 type Tool = ActivityResponse["tools"][number];
 const stageState = (tool: Tool | undefined, complete: boolean) => tool?.status === "running" ? "running" : tool?.status === "failed" ? "failed" : complete ? "complete" : "waiting";
-const DEMO_START_AT = Date.parse("2026-09-26T21:54:13Z");
-
 export default function LiveActivity() {
   const [data, setData] = useState<ActivityResponse | null>(null);
+  const [person, setPerson] = useState("all");
   const [conversation, setConversation] = useState("");
   const [error, setError] = useState("");
   const [refresh, setRefresh] = useState(0);
@@ -23,7 +22,7 @@ export default function LiveActivity() {
   const [readingHistory, setReadingHistory] = useState(false);
   const messagesRef = useRef<HTMLDivElement>(null);
   const followLatest = useRef(true);
-  const conversations = (data?.conversations ?? []).filter(item => item.participant_label === "Chris" && item.channel === "photon" && Date.parse(item.created_at) >= DEMO_START_AT);
+  const conversations = (data?.conversations ?? []).filter(item => item.channel === "photon" && ["Ben", "Chris", "Dara"].includes(item.participant_label ?? "") && (person === "all" || item.participant_label === person));
   const requestedConversation = conversation || conversations[0]?.id || "";
 
   useEffect(() => {
@@ -88,8 +87,8 @@ export default function LiveActivity() {
 
   return <div className="activity-workspace">
     <header className="activity-work-header"><div><span className="eyebrow">Observed conversation activity</span><h1>Live workbench</h1></div><div className="activity-header-actions"><span className={`activity-status ${data?.status === "live" && !error ? "connected" : ""}`}><Radio size={12}/>{error ? "Interrupted" : data?.status === "live" ? "Live · 3s refresh" : data?.status === "unconfigured" ? "Not configured" : data?.status === "unavailable" ? "Eve unavailable" : "Connecting…"}</span><button className="secondary" onClick={() => setRefresh(value => value + 1)} aria-label="Refresh activity"><RefreshCw size={14}/><span>Refresh</span></button></div></header>
-    <div className="activity-toolbar"><strong>Chris’s demo phone</strong><label className="activity-session-control">Conversation<select value={conversation} onChange={event => { setConversation(event.target.value); setShowTrace(false); }}><option value="">Follow latest Chris iMessage</option>{conversations.map(item => <option key={item.id} value={item.id}>{item.title} · {item.id.slice(-8)}</option>)}</select></label></div>
-    <div className="activity-context-line"><span>{selected ? `Chris · ${channel} · session ${selected.id.slice(-8)} · ${selected.status}` : "Waiting for a fresh text from Chris’s phone"}{data?.fetched_at && ` · ${time(data.fetched_at)}`}</span><details><summary>Messaging & reset</summary><p>On Chris’s registered phone, text /reset to Eve, then send a Tesla request. This view shows new Chris iMessage sessions only. Earlier records remain saved outside the demo view.</p></details></div>
+    <div className="activity-toolbar"><strong>Team demo phones</strong><label className="activity-session-control">Person<select value={person} onChange={event => { setPerson(event.target.value); setConversation(""); setShowTrace(false); }}><option value="all">Ben, Chris & Dara</option><option value="Ben">Ben</option><option value="Chris">Chris</option><option value="Dara">Dara</option></select></label><label className="activity-session-control">Conversation<select value={conversation} onChange={event => { setConversation(event.target.value); setShowTrace(false); }}><option value="">Follow latest {person === "all" ? "team" : person} iMessage</option>{conversations.map(item => <option key={item.id} value={item.id}>{item.participant_label} · {item.title} · {item.id.slice(-8)}</option>)}</select></label></div>
+    <div className="activity-context-line"><span>{selected ? `${selected.participant_label} · ${channel} · session ${selected.id.slice(-8)} · ${selected.status}` : "Waiting for a team text to Eve"}{data?.fetched_at && ` · ${time(data.fetched_at)}`}</span><details><summary>Messaging & reset</summary><p>On a registered phone, text /reset to Eve, then send a Tesla request. The selectors show Ben, Chris, and Dara’s recorded iMessage sessions. Earlier conversations stay available.</p></details></div>
     {error && <div className="notice" role="alert">{error} {data && "Last received activity shown."}</div>}
     {data?.warning && <div className="notice">{data.warning}</div>}
 
@@ -98,7 +97,7 @@ export default function LiveActivity() {
 
     <div className="activity-grid"><section className="activity-messages"><div className="section-line"><h2><MessageSquare size={16}/>{selected?.participant_label ? `${selected.participant_label} + Eve` : "Conversation"}</h2><span className="quiet">{messages.length ? `${shownMessages.length} of ${messages.length} messages` : "Waiting for a message"}</span></div>
       {!!messages.length && <div className="activity-history-controls"><button className="text-button" onClick={() => { if (showHistory) jumpToLatest(); else { setShowHistory(true); followLatest.current = false; setReadingHistory(true); requestAnimationFrame(() => { if (messagesRef.current) messagesRef.current.scrollTop = 0; }); } }}>{showHistory ? "Show recent 6" : "Show full history"}</button>{(readingHistory || showHistory) && <button className="text-button" onClick={jumpToLatest}>Latest message <ArrowDown size={12}/></button>}</div>}
-      {!messages.length ? <div className="activity-empty"><MessageSquare size={25}/><h3>Waiting for Chris’s demo text.</h3><p>Text /reset, then “Model Y under $35,000 in San Francisco, under 60,000 miles.”</p></div> : <div className="message-list" ref={messagesRef} onScroll={() => { const node = messagesRef.current; if (!node) return; const atBottom = node.scrollHeight - node.scrollTop - node.clientHeight < 50; followLatest.current = atBottom && !showHistory; setReadingHistory(!atBottom); }}>{shownMessages.map(message => <article className={`message-bubble ${message.role}`} key={message.id}><div><strong>{message.role === "user" ? selected?.participant_label ?? "Buyer" : "Eve"}</strong><time>{time(message.created_at)}</time></div>{message.text.length > 600 ? <><p>{message.text.slice(0, 600)}…</p><details><summary>Read full message</summary><p>{message.text}</p></details></> : <p>{message.text}</p>}</article>)}</div>}
+      {!messages.length ? <div className="activity-empty"><MessageSquare size={25}/><h3>Waiting for a team text.</h3><p>Text /reset, then “Model Y under $35,000 in San Francisco, under 60,000 miles.”</p></div> : <div className="message-list" ref={messagesRef} onScroll={() => { const node = messagesRef.current; if (!node) return; const atBottom = node.scrollHeight - node.scrollTop - node.clientHeight < 50; followLatest.current = atBottom && !showHistory; setReadingHistory(!atBottom); }}>{shownMessages.map(message => <article className={`message-bubble ${message.role}`} key={message.id}><div><strong>{message.role === "user" ? selected?.participant_label ?? "Buyer" : "Eve"}</strong><time>{time(message.created_at)}</time></div>{message.text.length > 600 ? <><p>{message.text.slice(0, 600)}…</p><details><summary>Read full message</summary><p>{message.text}</p></details></> : <p>{message.text}</p>}</article>)}</div>}
       <p className="tiny-note">Recorded replies prove generation. A reply on your phone proves delivery.</p>
     </section>
 
