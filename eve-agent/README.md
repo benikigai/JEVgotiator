@@ -23,12 +23,12 @@ The official provisioning command is `npm exec -- eve add channel/photon-imessag
 
 ## Known gaps
 
-The agent package can be built without provisioning Photon. A build does not verify the line, webhook delivery, model credentials, or a successful iMessage reply. Live channel testing remains necessary.
+The agent is deployed at [jevgotiator-agent.vercel.app](https://jevgotiator-agent.vercel.app). The existing Photon project has a signed webhook registered at `/eve/v1/photon`. A user-sent iMessage and observed reply are still needed to verify the transport end to end.
 
 Railway currently uses a shared integration owner. Eve's state isolates the last result by conversation, but the backend does not provide per-buyer authentication for that bearer key. Search tokens expire after one hour. The agent keeps only the latest shortlist and requires a new search after expiry. Current bundled listings are synthetic; a live Jev response does not make them real inventory.
 
 Tests cover position-to-listing mapping, private-token omission, expiry and invalid selections, and the client-side ban on contact dispatch. They do not substitute for two live Photon conversations with separate durable state.
 
-Local verification: TypeScript and three tests passed; `eve info` reported zero diagnostics and exactly the three authored tools. `eve build --skip-sandbox-prewarm` compiled a Node-host output that returned HTTP 200 on `/eve/v1/health` and HTTP 401 for unauthenticated session creation. The temporary server was stopped. Sandbox preparation was skipped, so run the normal fresh Vercel build for deployment instead of uploading this local output.
+Verification on September 26, 2026: TypeScript and four tests passed. A normal Vercel Node.js 24 build succeeded. Production health returned 200, unauthenticated session creation returned 401, and an unsigned Photon request returned 400 with `missing signature headers`. An authenticated operator conversation completed clarification, API search, and option-to-plan selection through the live model. It returned five synthetic Model 3 listings and a plan without contacting a seller. This verifies the model and API path, not iMessage delivery or separate Photon conversations.
 
 Framework references: [tools](https://eve.dev/docs/tools), [durable state](https://eve.dev/docs/concepts/state), [Photon](https://eve.dev/docs/channels/photon).
