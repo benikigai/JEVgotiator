@@ -32,9 +32,13 @@ The landing page shows the architecture and stack. On Chris's phone, text `/rese
 
 The buyer brief supports model, budget, maximum mileage, and black exterior as hard filters. Every connected live listing is marked **INSPECT** because provider data does not verify its VIN, battery, or physical condition. The MarketCheck adapter fetches at most 50 active used Teslas in San Francisco and caches the response for ten minutes per API process. More inventory may exist outside this bounded page. The credential supplied for this demo returned HTTP 401 in both API-key and OAuth checks, so production continues to use labeled synthetic inventory until a working MarketCheck key is supplied. No invalid credential was deployed.
 
-![Early conversation picker screenshot](docs/screenshots/early-conversation-picker.png)
+### Screenshots
 
-This early screenshot shows the conversation selector before the Chris-only judge view. The [live dashboard](https://jevgotiator.vercel.app/dashboard?view=activity) is the current presentation screen; it begins empty until Chris starts a fresh session.
+![Search dashboard design comparison](docs/design/dashboard-side-by-side.png)
+
+![Deal room design comparison](docs/design/dealroom-side-by-side.png)
+
+These are before/after captures from the dashboard design pass, using synthetic example cars. The [live iMessage workbench](https://jevgotiator.vercel.app/dashboard?view=activity) starts empty for the judge until Chris starts a fresh session.
 
 ## Run
 
