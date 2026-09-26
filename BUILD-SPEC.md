@@ -1,10 +1,10 @@
-# JEVcar initial build specification
+# JEVgotiator initial build specification
 
 Date: September 26, 2026. Status: proposed integration contract for team review. Product selected by Ben: car search and buying assistance in San Francisco. No production execution is authorized by this document.
 
 ## 1. Scope and product boundary
 
-The buyer describes the car they need through a client agent, web client, or Photon iMessage. JEVcar turns that request into a typed brief, filters a catalog, uses Jev to rank suitable cars, and hands one to three selected listings to Dara's negotiation workflow. Quotes return to the buyer for a second decision: choose the final car. The user sees the evidence behind recommendations and the current state of every external action. The [team sketch interpretation](docs/team-sketch.md) records the source notes and uncertain handwriting.
+The buyer describes the car they need through a client agent, web client, or Photon iMessage. JEVgotiator turns that request into a typed brief, filters a catalog, uses Jev to rank suitable cars, and hands one to three selected listings to Dara's negotiation workflow. Quotes return to the buyer for a second decision: choose the final car. The user sees the evidence behind recommendations and the current state of every external action. The [team sketch interpretation](docs/team-sketch.md) records the source notes and uncertain handwriting.
 
 First demo: brief, filter, rank, selection, contact approval, one negotiation result, and a purchase handoff. Support a controlled test seller for the call. If a provider is unavailable, show a labeled replay or pending state. Never show a simulated call or purchase as completed live.
 
@@ -178,7 +178,7 @@ Chris can adapt the reported Browserbase/Stagehand Facebook Marketplace prototyp
 
 The sketch groups retailer listings, Facebook Marketplace and local car dealers into the master database. Each source normalizes into the same `CarListing` contract and retains its own source identity. The handwritten retailer name is not confidently legible and remains unresolved. These are planned sources, not verified connected feeds.
 
-Browserbase's documented Jev action-selection work is a prototype with a linked PR stack. It is separate from JEVcar's listing scorer; the search API does not depend on that browser integration being released. Keep report retrieval, credentialed sessions, and private contacts outside the public listing response.
+Browserbase's documented Jev action-selection work is a prototype with a linked PR stack. It is separate from JEVgotiator's listing scorer; the search API does not depend on that browser integration being released. Keep report retrieval, credentialed sessions, and private contacts outside the public listing response.
 
 ## 10. Build order and acceptance
 

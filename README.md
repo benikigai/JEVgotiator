@@ -1,6 +1,6 @@
-# JEVcar
+# JEVgotiator
 
-Tell JEVcar what car you need. It searches listings in San Francisco, ranks the eligible cars with Jev, and helps you negotiate the ones you choose.
+Tell JEVgotiator what car you need. It searches listings in San Francisco, ranks the eligible cars with Jev, and helps you negotiate the ones you choose.
 
 **Status:** initial design for a three-person JEVathon team. This repository contains the plan and integration contracts. The application and deployment are not implemented here yet.
 
@@ -21,7 +21,7 @@ The database is an inventory of observed listings, not a claim to contain every 
 ```mermaid
 flowchart TD
     Buyer[Buyer] --> Channel[Web or Photon iMessage]
-    Channel --> API[JEVcar API]
+    Channel --> API[JEVgotiator API]
     ClientAgent[Client agent] --> API
     API --> Clarify[Clarify and confirm buyer brief]
     Clarify --> Filter[Filter 1: hard eligibility in code]
@@ -84,20 +84,10 @@ There is no application run command yet. No provider credentials belong in this 
 
 ## First working demo
 
-A buyer asks for a car under a stated budget in San Francisco. JEVcar clarifies the budget basis and timeline, filters real or clearly labeled demo listings, and ranks five candidates. The buyer selects up to three, authorizes a bounded seller contact, and receives a quote comparison. A purchase-ready handoff shows the next approval needed.
+A buyer asks for a car under a stated budget in San Francisco. JEVgotiator clarifies the budget basis and timeline, filters real or clearly labeled demo listings, and ranks five candidates. The buyer selects up to three, authorizes a bounded seller contact, and receives a quote comparison. A purchase-ready handoff shows the next approval needed.
 
 Actual payment, financing, deposits, title transfer, and signatures are outside the first demo. The design leaves a specific approval boundary for later execution. Live, synthetic, and replayed steps must be labeled.
 
 ## Known gaps
 
-Chris's database technology, Dara's call provider and runtime, and the team's Browserbase prototype revision are not confirmed. Inventory sources in the diagram are planned; the sketch's retailer name needs confirmation. Photon line setup and end-to-end messaging are untested. Earlier session checks verified TypeSafe inference and Vercel account access, but do not establish a deployed JEVcar integration.
-
-## Name shortlist
-
-Keep **JEVcar** as the working name and repository. Five alternatives:
-
-1. **JEVKeys**: from a buying brief to keys in hand. Best fit for the full journey.
-2. **JEVDeal**: emphasizes negotiation and getting the right deal.
-3. **JEVDrive**: simple, memorable, and broad enough for the product to grow.
-4. **JEVMatch**: emphasizes finding a car that fits the buyer.
-5. **JEVGarage**: emphasizes the car inventory and comparison experience.
+Chris's database technology, Dara's call provider and runtime, and the team's Browserbase prototype revision are not confirmed. Inventory sources in the diagram are planned; the sketch's retailer name needs confirmation. Photon line setup and end-to-end messaging are untested. Earlier session checks verified TypeSafe inference and Vercel account access, but do not establish a deployed JEVgotiator integration.
