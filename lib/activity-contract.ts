@@ -1,5 +1,9 @@
 import type { Optimization, SearchResult } from "./contracts";
 
+export const activityParticipants = ["Ben", "Chris", "Dara"] as const;
+export type ActivityParticipant = typeof activityParticipants[number];
+export type ParticipantFilter = ActivityParticipant | "unknown" | "";
+
 export type ActivityResponse = {
   source: "eve";
   status: "live" | "unconfigured" | "unavailable";
@@ -10,6 +14,7 @@ export type ActivityResponse = {
     channel: "photon" | "http" | "unknown";
     status: string;
     updated_at: string;
+    participant_label?: ActivityParticipant;
   }[];
   selected_id: string | null;
   messages: { id: string; role: "user" | "assistant"; text: string; created_at: string }[];
@@ -18,3 +23,7 @@ export type ActivityResponse = {
   optimization: Omit<Optimization, "job_token"> | null;
   warning: string | null;
 };
+
+export function conversationsForParticipant(conversations: ActivityResponse["conversations"], participant: ParticipantFilter) {
+  return conversations.filter((conversation) => !participant || (participant === "unknown" ? !conversation.participant_label : conversation.participant_label === participant));
+}
