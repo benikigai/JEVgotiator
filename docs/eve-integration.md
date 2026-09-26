@@ -1,24 +1,28 @@
-# Chris's Eve and Photon handoff
+# Eve and Photon integration
 
-Chris owns the Eve agent on Vercel and its Photon iMessage channel. Ben owns the dashboard and search API on Railway. Dara owns the separate optimization service. This document specifies the prototype integration; end-to-end live verification is pending.
+The [Eve agent](../eve-agent/README.md) is implemented in this repository as a separate Node.js 24 package. It has a Photon channel and three API tools. Both [Vercel](https://jevgotiator.vercel.app) and Railway revision `ecfd8ca` passed authenticated model-clarification → live-Jev-search → selected-plan smoke tests. Eve production `4211660` passed a three-turn live HTTP operator conversation. The Photon webhook is created and its signing secret stored. The staged Activity feed reads durable Eve records; its deployment, actual inbound iMessage, and observed phone replies remain unverified.
 
 ```mermaid
 flowchart LR
     Buyer[Buyer iMessage] --> Photon[Photon]
-    Photon --> Eve[Chris: Eve on Vercel]
+    Photon -. message verification pending .-> Eve[Eve on Vercel]
     Eve --> API[Ben: Railway API]
     API --> Jev[Jev ranking]
     API --> Plan[Deal planning]
     API -. approved live contact .-> Dara[Dara optimization]
     API --> Eve
     Eve --> Photon
+    Eve --> Records[Durable conversation events]
+    Records -. protected activity route .-> Dashboard[Dashboard Activity tab]
 ```
 
-## 1. Set up the channel and credentials
+## 1. Deploy the implemented channel
 
-Inside Chris's Eve project, run `eve add channel/photon-imessage` and choose Vercel Connect. Keep the generated connector ID. Photon documents the webhook route as `/eve/v1/photon`; the Vercel Connect route verifies same-project OIDC and does not need a separate `IMESSAGE_WEBHOOK_SECRET` by default. The channel keeps an iMessage conversation in one Eve session. Follow the generated channel configuration because the TypeScript API is evolving. [Photon's Eve integration](https://photon.codes/docs/integrations/eve).
+Set the Vercel project's root directory to `eve-agent`. The package has its own lockfile, build, tests, and runtime. From that directory, run `npm ci`, `npm test`, `npm run typecheck`, and `npm run build`. Local development uses `npm run dev`; `npm exec -- eve dev --no-ui` starts the HTTP server without the terminal UI. Do not rerun channel scaffolding to compile or deploy the existing source.
 
-Create Eve tools using `defineTool` from `eve/tools` in Chris's project. The tools should call the existing Railway API; this repository does not need another Eve implementation. [Vercel Eve tools](https://vercel.com/docs/eve#add-a-tool).
+The selected setup uses the existing Photon project's portable credentials and a signed webhook at `/eve/v1/photon`. [agent/channels/photon.ts](../eve-agent/agent/channels/photon.ts) loads them from the environment. The webhook is already registered and its signing secret stored in the vault; configure the deployed agent's encrypted `IMESSAGE_WEBHOOK_SECRET` from that value. Do not create a duplicate webhook. The demo line is +1 (415) 605-7073. Test from the registered personal sender without adding that sender's number to the repo. Configuration is not proof that Photon delivered a message. [Photon's Eve integration](https://photon.codes/docs/integrations/eve).
+
+Vercel Connect remains an alternative: set `PHOTON_CONNECTOR_ID` to use the existing credential loader. That path defaults to same-project Vercel OIDC verification and does not require a portable webhook secret. The official `eve add channel/photon-imessage` wizard can provision that alternative, but may overwrite existing channel code. It is not part of the current portable setup.
 
 Set these only in the Eve server environment:
 
@@ -26,12 +30,18 @@ Set these only in the Eve server environment:
 | --- | --- |
 | `JEVGOTIATOR_API_URL` | `https://jevgotiator-production.up.railway.app` |
 | `JEVGOTIATOR_API_KEY` | vault item, field **INTEGRATION_API_KEY** |
+| `IMESSAGE_PROJECT_ID`, `IMESSAGE_PROJECT_SECRET` | Existing Photon project credentials from the vault |
+| `IMESSAGE_WEBHOOK_SECRET` | Signing secret for the registered direct Photon webhook |
+| `AI_GATEWAY_API_KEY` | Needed for local model access; Vercel can use its OIDC credential |
+| `EVE_API_KEY` | Separate operator credential for authenticated HTTP session tests |
 
-The API key must match Railway's `INTEGRATION_API_KEY`. Keep it out of messages, tool outputs, client code, and logs. The dashboard access code is not the API credential. The Railway URL is the assigned deployment target; verify the current deployed revision and actual requests before claiming the connection works.
+The API key must match Railway's `INTEGRATION_API_KEY`. Keep it out of messages, tool outputs, client code, and logs. The dashboard access code is not the API credential. Railway is serving the configured Eve API target above. Vercel independently serves the same dashboard/API at [jevgotiator.vercel.app](https://jevgotiator.vercel.app), the canonical public dashboard; its long team alias requires SSO. Both hosts passed `live_model`, `live_jev`, and `planning` smoke tests with 1,000 synthetic records → 82 eligible → 30 scored → five shown → two plans. Vercel also passed root/health HTTP 200, team login, and origin validation; seller contact is disabled. This establishes the dashboard/API deployments, not a successful Eve or iMessage conversation.
 
 Every business request uses `Authorization: Bearer <server-held key>` and `Content-Type: application/json`. Make requests server-to-server, without forwarding the Vercel browser Origin header. No dashboard login cookie is required for bearer access.
 
-## 2. Three tools for the first integration
+## 2. Three implemented tools
+
+The tools are [clarify_car_request](../eve-agent/agent/tools/clarify_car_request.ts), [search_teslas](../eve-agent/agent/tools/search_teslas.ts), and [prepare_deal_plan](../eve-agent/agent/tools/prepare_deal_plan.ts). Search requires `buyer_confirmed: true`; plan selection uses positions from the saved shortlist. The following sections describe their underlying HTTP calls. Shell, filesystem, browser, delegation, seller-contact, and purchase tools are disabled or absent.
 
 ### Clarify a buyer request
 
@@ -100,12 +110,16 @@ The response contains `plans`, `quotes`, `events`, `mode`, `status`, and warning
 
 ## 3. Conversation isolation and failure behavior
 
-Store `{session_id, result_token, results, brief, created_at}` privately per Eve conversation/session. Do not use a process-global latest search or expose tokens in chat. A new search replaces that conversation's selection mapping. On token expiry, search again and ask the buyer to reconfirm selections.
+The implemented `searchState` stores `{session_id, result_token, results, brief, created_at}` privately through Eve's durable per-session state. Tool responses omit the opaque result token. A new search clears the prior mapping before making the request, so failure cannot silently reuse an old shortlist. On token expiry, search again and ask the buyer to reconfirm selections.
 
 The current backend assigns all requests using the integration key to the shared owner `integration-client`. It does not cryptographically distinguish individual iMessage buyers. The Eve adapter must enforce conversation isolation, and backend per-buyer authentication remains production work. The API's browser cookie sessions have separate owners; do not transfer browser result tokens into the bearer flow.
 
 Handle non-2xx `{error}` responses explicitly. A health response reports configuration only, not provider connectivity. Use a client timeout that allows the bounded search to finish, and do not silently invent results after an error. The live contact adapter has uncertain-outcome rules and must not be automatically retried. No purchase, deposit, payment, financing, signature, or title action exists.
 
-## 4. Acceptance check with Chris
+## 4. What remains to verify
 
-Confirm the Railway revision, then prove one authenticated clarify → confirmed search → selected-plan sequence. Next, run the same sequence from an actual iMessage and observe the reply. Test two independent conversations to ensure “1” selects each conversation's own first listing, and verify no seller contact occurs. Record the received message, API outcome, and observed reply separately. Channel configuration and a successful API request alone are not an end-to-end messaging test.
+Vercel and Railway dashboard/API acceptance passed on `ecfd8ca`; Railway also rejected synthetic seller contact. Eve production `4211660` passed three real HTTP operator turns using its model and tools: clarify, search returning five results, and prepare a plan for option one. Health and authenticated operator requests returned 200; unauthenticated session creation returned 401, and unsigned Photon requests returned 400 for a missing signature. These are operator tests, not iMessage delivery evidence.
+
+The staged dashboard Activity tab polls `/api/v1/activity` every three seconds. The dashboard server uses `EVE_AGENT_URL` and its server-held `EVE_API_KEY` to read Eve's protected `/jevgotiator/activity` endpoint. The feed reads existing durable session/event records through the pinned `@workflow/world-vercel` runtime; it adds no database. The browser receives a sanitized view of messages, tool activity, the selected conversation's search and Jev trace, and its negotiation plan. Private result tokens and server credentials are excluded. The new implementation passed 44 root tests, TypeScript checking, and the Next.js build; deployed Activity readback is still pending.
+
+Run the [two-minute walkthrough](demo-walkthrough.md) from an actual iMessage and observe the reply. Follow the Photon-labeled conversation in Activity, confirm the brief in iMessage, inspect that conversation's Jev trace, then select one to three cars and watch its plan appear. A recorded assistant message proves generation, not delivery. Test two independent conversations to ensure “1” selects each conversation's own first listing, and verify no seller contact occurs. Record inbound receipt, API outcome, Activity updates, and the reply visible on the phone separately. Chris's real catalog and Dara's execution endpoint remain pending.

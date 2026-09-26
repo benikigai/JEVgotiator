@@ -1,6 +1,6 @@
 # JEVgotiator build specification
 
-September 26, 2026. This document describes the implemented hackathon slice and its pending integrations. Source code and runtime schemas are authoritative. Deployment verification is pending; Railway configuration is ready.
+September 26, 2026. This document describes the implemented hackathon slice and its pending integrations. Source code and runtime schemas are authoritative. Vercel and Railway revision `ecfd8ca` passed authenticated HTTP smoke tests. Eve production `4211660` passed a three-turn HTTP operator conversation. The Photon webhook is created and its signing secret stored. Activity deployment and actual iMessage delivery still need live verification.
 
 ## 1. The 72-minute scope
 
@@ -13,9 +13,12 @@ Implemented locally:
 - A deterministic 1,000-record synthetic Tesla catalog and Chris-compatible export adapter.
 - Hard eligibility filters, a 30-candidate scoring boundary, Jev evidence scoring, and up to five results.
 - Session-bound result tokens, one-to-three selection, local optimization plans, export, and a gated Dara adapter.
+- An Eve agent in `eve-agent/` with Photon credentials, three API tools, and private per-conversation shortlist state.
+- A visible Jev execution trace: exact bounded input and questions, returned typed scores, code weights, and score composition. It exposes no hidden reasoning or provider credentials.
+- A staged Activity tab and protected feed that read durable Eve conversation records, refresh every three seconds, and expose each conversation's tools, search trace, and selected-car plan without private result tokens.
 - Tests for filter boundaries, privacy projection, provenance, provider failures, Jev response handling, and optimization behavior.
 
-Pending integrations: Chris's real inventory endpoint, Dara's live endpoint and durable execution guarantees, Photon number/webhook, and verified hosting. There is no purchase execution, payment, database, scheduled follow-up, or internal durable agent worker.
+Pending integrations: Chris's real inventory endpoint, Dara's live endpoint and durable execution guarantees, and a verified Photon message round trip visible in Activity. The existing Photon project uses portable credentials; the webhook and signing secret are provisioned. Eve's HTTP flow passed; Activity deployment and the real sender test remain. There is no purchase execution, payment, application database, scheduled follow-up, or internal durable seller-job worker.
 
 ## 2. Architecture and hosting
 
@@ -26,8 +29,11 @@ flowchart TD
     Buyer[Buyer] --> Web[Next.js dashboard]
     Client[Trusted client agent] --> API[Authenticated API]
     Web --> API
-    Photon[Photon iMessage] -.-> Eve[Chris: Eve agent on Vercel]
+    Photon[Photon iMessage] -. pending delivery verification .-> Eve[Eve agent on Vercel]
     Eve -. bearer API .-> API
+    Eve --> Records[Durable Eve session and event records]
+    Records -. protected feed .-> Proxy[Authenticated dashboard activity proxy]
+    Proxy -. three-second polling .-> Activity[Activity tab: selected conversation]
     API --> Brief[Extract and confirm structured brief]
     Fixture[1,000 synthetic Teslas] --> Catalog[Catalog normalizer]
     Chris[Chris: configured catalog API] --> Catalog
@@ -40,6 +46,7 @@ flowchart TD
     Top --> Select[Buyer selects 1 to 3]
     Select --> Plan[Local questions and outreach plan]
     Plan --> Export[Export handoff]
+    Activity --> Trace[That conversation's Jev trace and plan]
     Plan --> Gate[Explicit contact approval + server gate]
     Gate --> Dara[Dara: external optimization API]
     Dara --> Quotes[Provider status and quote polling]
@@ -47,7 +54,11 @@ flowchart TD
     Choice --> Handoff[Handoff only: no purchase action]
 ```
 
-Railway is the selected host for both dashboard and API. `railway.toml` uses Railpack, `npm run build`, `npm start`, and `/api/v1/health`. Production requires `APP_SECRET` and `DEMO_ACCESS_CODE`; set `APP_ORIGIN` to the exact public dashboard origin and inject provider credentials server-side. Configuration alone does not prove a successful deployment. Do not add a second deployment framework or database for the first slice.
+The canonical public dashboard is [jevgotiator.vercel.app](https://jevgotiator.vercel.app). Vercel and [jevgotiator-production.up.railway.app](https://jevgotiator-production.up.railway.app) each host the complete dashboard and API at revision `ecfd8ca`. Both passed an authenticated clarify → search → plan smoke test with `live_model`, `live_jev`, and `planning` outcomes: 1,000 synthetic records → 82 eligible → 30 scored → five shown → two plans. Vercel root and health requests returned HTTP 200; team login and origin validation passed. Seller contact is disabled, and Railway's synthetic-contact guard also rejected dispatch. These counts describe the tested request, not a general quality benchmark. The long Vercel team alias requires SSO; share the canonical short domain.
+
+Railway config-as-code is not active for this service. `railway.toml` is reference only; remote service settings specify `npm run build`, `npm start`, and `/api/v1/health`. The verified Railway deployment used `serviceInstanceDeploy` with an explicit `commitSha` after a branch connector issue. Railway branch-based auto-deploy is unverified. Vercel is a standalone deployment of the same dashboard/API, not a proxy to Railway.
+
+Production requires `APP_SECRET` and `DEMO_ACCESS_CODE`; set `APP_ORIGIN` to the exact public dashboard origin and inject provider credentials server-side. The separately packaged Eve agent targets Vercel with Node.js 24. Its current channel uses portable Photon project credentials and `IMESSAGE_WEBHOOK_SECRET`; Vercel Connect is an alternative, not the selected provisioning path.
 
 ## 3. Actual brief and listing contracts
 
@@ -68,7 +79,7 @@ The accepted `Brief` has:
 | `needed_by` | Nullable YYYY-MM-DD availability deadline |
 | `priority` | `best_fit`, `lowest_price`, or `low_mileage` |
 
-Clarification uses local extraction by default. With `AI_GATEWAY_API_KEY`, it requests structured extraction from `CLARIFY_MODEL` (default `openai/gpt-4.1-mini`) through Vercel AI Gateway with a ten-second timeout. Failure returns guided mode. A buyer can edit every structured constraint before confirming. There is no autonomous multi-turn conversation loop or persisted brief-version history yet.
+Clarification uses local extraction by default. With `AI_GATEWAY_API_KEY`, it requests structured extraction from `CLARIFY_MODEL` (default `openai/gpt-4.1-mini`) through Vercel AI Gateway with a ten-second timeout. Failure returns guided mode. A buyer can edit every structured constraint before confirming. The Eve package adds a conversation layer around these API calls; the API itself has no autonomous conversation loop or persisted brief-version history.
 
 `Car` stores price in USD and mileage in miles, not cents. It includes stable ID, make/model/year/trim, color/body/fuel, city, photos, description, accident/maintenance/title history, public seller metadata, source, listing URL, observation timestamp, active/sold/unknown status, availability date, and live/synthetic/replay mode. Private contact values and arbitrary source objects are omitted; contact-like phone/email text is redacted.
 
@@ -91,7 +102,7 @@ Full contract and import instructions: [docs/catalog-integration.md](docs/catalo
 3. The route sorts eligible cars by mileage for `low_mileage`; otherwise by asking price. It passes only the first 30 to Jev. This is a candidate cap, not a limit on catalog loading. All eligible, candidate, scored, and shown counts are returned. Above 30, a warning says coverage is limited. This shortlist can miss a better semantic match outside the first 30.
 4. Jev receives one bounded batch request using pinned `jev-1.13.0`. Every candidate has a Noul buyer-fit question, plus a maintenance question when maintenance text exists. Each question explicitly identifies its listing index. Descriptions and history are input data, not executable instructions. Private seller contacts are not sent.
 5. For `best_fit`, fit carries weight 0.85 and supplied maintenance evidence 0.15. For price/mileage priorities, fit is 0.5, supplied maintenance 0.1, and a code-computed relative numeric factor 0.4. Missing maintenance omits that factor and renormalizes remaining weights. There is no confidence multiplier.
-6. Return at most five, with per-factor evidence snippets, unknowns, model, token usage, estimated cost, latency, and mode. Every result currently has `verification_required: true`; none is certified purchase-ready.
+6. Return at most five, with per-factor evidence snippets, unknowns, model, token usage, estimated cost, latency, and mode. Optional `ranking.trace` records all scored candidates, exact questions and bounded model state, accepted or discarded numeric answers, and deterministic score composition. Price and mileage are code-only inputs. The trace distinguishes model scoring from hard filtering and fallback; it is not hidden model reasoning. Every result currently has `verification_required: true`; none is certified purchase-ready.
 
 The Jev request has a 14-second deadline, response/model/answer validation, and no automatic retry. Missing credentials, timeout, incomplete answers, or errors produce `unscored_fallback`: deterministic results with null scores, an explicit warning, and no invented AI judgment. No partial scores are silently mixed into a completed ranking. Estimated cost uses returned input tokens at the configured code rate; it is not an account billing receipt. There is no ranking cache or completed evaluation benchmark yet.
 
@@ -109,6 +120,7 @@ All routes below are implemented. Health is public; other business routes requir
 | `POST /api/v1/search` | `{brief}` → ranked results, counts, catalog metadata, encrypted `result_token` |
 | `POST /api/v1/optimize` | `{result_token, listing_ids, action: "plan" \| "contact", contact_approved}` |
 | `GET /api/v1/optimize?token=...` | Poll Dara using a session-bound job token |
+| `GET /api/v1/activity?conversation_id=...` | Staged authenticated proxy to the protected Eve activity feed; no result tokens or server credentials returned |
 
 `SearchResult` contains `session_id`, `result_token`, `brief`, `results`, `counts`, `ranking`, `catalog`, and `created_at`. Count fields are `total`, `eligible`, `candidates`, `scored`, and `shown`.
 
@@ -150,9 +162,11 @@ A later purchase adapter would require a persisted approval tied to exact VIN, s
 
 ## 9. Photon and integration handoff
 
-Chris is setting up Photon and an Eve agent on Vercel. The path is buyer iMessage → Photon → Eve → the existing Railway API at `https://jevgotiator-production.up.railway.app`. Live deployment and messaging verification remain pending. This API does not need its own Eve runtime, incoming Photon route, or outbound iMessage sender.
+The Eve implementation is in [eve-agent/](eve-agent/README.md), packaged separately for Vercel. The target demo is buyer iMessage to +1 (415) 605-7073 → Photon → Eve clarification and buyer confirmation → the verified Railway search API. The sender uses their registered personal device; personal sender numbers are not stored in repo documentation. The channel receives requests at `/eve/v1/photon` using portable `IMESSAGE_PROJECT_ID`, `IMESSAGE_PROJECT_SECRET`, and `IMESSAGE_WEBHOOK_SECRET`. The webhook is created and the signing secret stored. Actual inbound delivery and an observed iMessage reply remain pending.
 
-The [Eve handoff](docs/eve-integration.md) specifies the three initial tools: clarify, confirmed search, and plan selected cars. Chris configures the channel, keeps API credentials server-side, and persists each result token and numbered-list mapping inside its originating Eve conversation. A reply such as “1 and 3” must resolve only against that result. The bearer API currently shares one integration owner, so conversation isolation is required in Eve and is not claimed as backend per-buyer authentication. No contact or purchase tool belongs in the initial messaging handoff. Provider acceptance and actual message delivery need separate evidence.
+The [Eve handoff](docs/eve-integration.md) describes the three implemented tools: clarify, confirmed search, and plan selected cars. The agent stores the latest result token and numbered-list mapping privately in durable Eve session state and omits the token from tool output. A reply such as “1 and 3” resolves against that session's result. The bearer API still shares one integration owner, so backend per-buyer authentication remains unimplemented. No contact or purchase tool is exposed. Provider acceptance and actual message delivery need separate evidence.
+
+The staged Activity tab polls the authenticated dashboard endpoint every three seconds. Its server proxy uses `EVE_AGENT_URL` and server-held `EVE_API_KEY` to read Eve's protected `/jevgotiator/activity` route. That route reads existing durable workflow/session events through the pinned `@workflow/world-vercel` runtime, without a new database. The view links messages, tool calls, shortlist, Jev trace, and plan to one selected conversation. It labels Photon versus HTTP operator sessions, keeps private tokens out of the browser, and reports unavailable data rather than substituting a conversation. A stored assistant reply proves generation; only its appearance on the sender's phone proves message delivery.
 
 Chris should provide the export URL, authentication convention, one sanitized response, and pagination behavior. Dara should provide the POST/status endpoints, response example, idempotency behavior, and approved test contact. Team acceptance and live integration tests are still required.
 
@@ -160,7 +174,11 @@ Chris should provide the export URL, authentication convention, one sanitized re
 
 Run `npm test`, `npm run typecheck`, and `npm run build`. Exercise the dashboard with a normal request, no matches, missing history, an out-the-door budget, a deadline, and one-to-three selection. Verify that synthetic records cannot enter contact dispatch. A configured service is only proven by its successful request and user-visible result.
 
-For the demo: describe a Tesla, confirm the brief, show 1,000 catalog records narrowing to eligible cars and at most 30 scored candidates, inspect the top-five evidence, choose cars, and export the deal plan. Show a real provider job only after its integration is verified. Keep synthetic inventory, live Jev inference, planning, and provider-reported outcomes visibly distinct.
+The Vercel and Railway HTTP smoke tests passed on `ecfd8ca`: authenticated model clarification, live Jev search, and two selected plans. Railway also rejected synthetic contact; Vercel reported contact disabled. Eve production `4211660` separately passed three live HTTP operator turns: clarification, five search results, and a plan for option one. Eve health and authenticated operator requests returned 200; unauthenticated session creation returned 401, and unsigned Photon requests returned 400 for a missing signature. These results do not verify a Photon conversation, real inventory, or Dara execution.
+
+The new Activity implementation passed 44 root tests, TypeScript checking, and the Next.js build. Deployment verification and the personal-sender iMessage test remain pending.
+
+Use the [two-minute demo walkthrough](docs/demo-walkthrough.md): text a request, confirm Eve's brief, follow that Photon conversation in Activity, inspect its real Jev request and returned scores, reply with one to three choices, and show the plan. The new deployment and message test must pass before presenting this as a working iMessage flow. If transport is unavailable, use the already verified dashboard search and label that as a dashboard demonstration. Keep synthetic inventory, live inference, planning, and provider-reported outcomes visibly distinct.
 
 Remaining production work includes durable records and approvals, authenticated multi-user identities, rate limiting, provider observability, a complete ranking evaluation, durable follow-up, and the verified Photon and seller integrations. No quality, market-coverage, negotiation-success, or purchase-completion claim is established by the demo.
 
