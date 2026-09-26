@@ -20,6 +20,7 @@
     "max_mileage_miles": 60000,
     "makes": [],
     "models": [],
+    "exterior_colors": [],
     "body_types": [],
     "fuel_types": [],
     "title_requirement": null,
