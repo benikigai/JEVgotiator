@@ -1,14 +1,10 @@
 import { z } from "zod";
-import { searchResponseSchema } from "./contracts";
+import { searchResponseSchema, planResponseSchema } from "./contracts";
 
 type Row = Record<string, unknown>;
 const row = (value: unknown): Row => value && typeof value === "object" && !Array.isArray(value) ? value as Row : {};
 const publicSearchSchema = searchResponseSchema.omit({ result_token: true });
-const planSchema = z.object({
-  id: z.string(), mode: z.literal("planning"), status: z.enum(["ready", "pending", "completed", "needs_review"]), summary: z.string(),
-  plans: z.array(z.object({ listing_id: z.string(), title: z.string(), asking_price: z.number().nullable(), target_price: z.null(), questions: z.array(z.string()), opening_message: z.string() })).max(3),
-  warning: z.string().nullable(),
-});
+const planSchema = planResponseSchema;
 
 export function redactActivityText(value: unknown, max = 6000): string {
   if (typeof value !== "string") return "";

@@ -1,6 +1,6 @@
 # JEVgotiator build specification
 
-September 26, 2026. This document describes the implemented hackathon slice and its pending integrations. Source code and runtime schemas are authoritative. Vercel and Railway revision `ecfd8ca` passed authenticated HTTP smoke tests. Eve production `4211660` passed a three-turn HTTP operator conversation. The Photon webhook is created and its signing secret stored. Activity deployment and actual iMessage delivery still need live verification.
+September 26, 2026. Source code and runtime schemas are authoritative. Vercel and Railway revision `5764a56` are verified with live Activity. The user confirmed a real Photon iMessage reply, and its Activity record showed seven messages and five search results. Public landing and `/dashboard` routing, the `/reset` command, and Dara intelligence with synthetic negotiation scenarios are implemented locally; their next deployment and new-plan verification are pending.
 
 ## 1. The 72-minute scope
 
@@ -15,10 +15,11 @@ Implemented locally:
 - Session-bound result tokens, one-to-three selection, local optimization plans, export, and a gated Dara adapter.
 - An Eve agent in `eve-agent/` with Photon credentials, three API tools, and private per-conversation shortlist state.
 - A visible Jev execution trace: exact bounded input and questions, returned typed scores, code weights, and score composition. It exposes no hidden reasoning or provider credentials.
-- A staged Activity tab and protected feed that read durable Eve conversation records, refresh every three seconds, and expose each conversation's tools, search trace, and selected-car plan without private result tokens.
+- An implemented Activity tab and protected feed that read durable Eve conversation records, refresh every three seconds, and expose each conversation's tools, search trace, and selected-car plan without private result tokens.
+- Dara’s selected-car intelligence port from `dara-sample` commit `163fa478`, plus separately labeled synthetic-only negotiation scenarios.
 - Tests for filter boundaries, privacy projection, provenance, provider failures, Jev response handling, and optimization behavior.
 
-Pending integrations: Chris's real inventory endpoint, Dara's live endpoint and durable execution guarantees, and a verified Photon message round trip visible in Activity. The existing Photon project uses portable credentials; the webhook and signing secret are provisioned. Eve's HTTP flow passed; Activity deployment and the real sender test remain. There is no purchase execution, payment, application database, scheduled follow-up, or internal durable seller-job worker.
+Pending integrations: Chris's real inventory endpoint and Dara's live seller endpoint with durable execution guarantees. Photon send-and-reply and live Activity are verified for the tested sender. The landing/reset/intelligence update still needs deployment and a fresh plan check. There is no purchase execution, payment, application database, scheduled follow-up, or internal durable seller-job worker.
 
 ## 2. Architecture and hosting
 
@@ -29,7 +30,7 @@ flowchart TD
     Buyer[Buyer] --> Web[Next.js dashboard]
     Client[Trusted client agent] --> API[Authenticated API]
     Web --> API
-    Photon[Photon iMessage] -. pending delivery verification .-> Eve[Eve agent on Vercel]
+    Photon[Photon iMessage] --> Eve[Eve agent on Vercel]
     Eve -. bearer API .-> API
     Eve --> Records[Durable Eve session and event records]
     Records -. protected feed .-> Proxy[Authenticated dashboard activity proxy]
@@ -44,7 +45,8 @@ flowchart TD
     Cap --> Jev[Jev fit and maintenance scores]
     Jev --> Top[Return at most 5 with evidence]
     Top --> Select[Buyer selects 1 to 3]
-    Select --> Plan[Local questions and outreach plan]
+    Select --> Intelligence[Dara weighted intelligence]
+    Intelligence --> Plan[Local plan and labeled synthetic scenario]
     Plan --> Export[Export handoff]
     Activity --> Trace[That conversation's Jev trace and plan]
     Plan --> Gate[Explicit contact approval + server gate]
@@ -54,7 +56,7 @@ flowchart TD
     Choice --> Handoff[Handoff only: no purchase action]
 ```
 
-The canonical public dashboard is [jevgotiator.vercel.app](https://jevgotiator.vercel.app). Vercel and [jevgotiator-production.up.railway.app](https://jevgotiator-production.up.railway.app) each host the complete dashboard and API at revision `ecfd8ca`. Both passed an authenticated clarify → search → plan smoke test with `live_model`, `live_jev`, and `planning` outcomes: 1,000 synthetic records → 82 eligible → 30 scored → five shown → two plans. Vercel root and health requests returned HTTP 200; team login and origin validation passed. Seller contact is disabled, and Railway's synthetic-contact guard also rejected dispatch. These counts describe the tested request, not a general quality benchmark. The long Vercel team alias requires SSO; share the canonical short domain.
+The canonical public site is [jevgotiator.vercel.app](https://jevgotiator.vercel.app). After the pending deployment, `/` is the public landing page and `/dashboard?view=activity` opens the demo access flow. Vercel and [jevgotiator-production.up.railway.app](https://jevgotiator-production.up.railway.app) each host the complete dashboard and API at verified revision `5764a56`. Both passed an authenticated clarify → search → plan smoke test with `live_model`, `live_jev`, and `planning` outcomes: 1,000 synthetic records → 82 eligible → 30 scored → five shown → two plans. Vercel root and health requests returned HTTP 200; team login and origin validation passed. Seller contact is disabled, and Railway's synthetic-contact guard also rejected dispatch. These counts describe the tested request, not a general quality benchmark. The long Vercel team alias requires SSO; share the canonical short domain.
 
 Railway config-as-code is not active for this service. `railway.toml` is reference only; remote service settings specify `npm run build`, `npm start`, and `/api/v1/health`. The verified Railway deployment used `serviceInstanceDeploy` with an explicit `commitSha` after a branch connector issue. Railway branch-based auto-deploy is unverified. Vercel is a standalone deployment of the same dashboard/API, not a proxy to Railway.
 
@@ -120,7 +122,7 @@ All routes below are implemented. Health is public; other business routes requir
 | `POST /api/v1/search` | `{brief}` → ranked results, counts, catalog metadata, encrypted `result_token` |
 | `POST /api/v1/optimize` | `{result_token, listing_ids, action: "plan" \| "contact", contact_approved}` |
 | `GET /api/v1/optimize?token=...` | Poll Dara using a session-bound job token |
-| `GET /api/v1/activity?conversation_id=...` | Staged authenticated proxy to the protected Eve activity feed; no result tokens or server credentials returned |
+| `GET /api/v1/activity?conversation_id=...` | Authenticated proxy to the protected Eve activity feed; no result tokens or server credentials returned |
 
 `SearchResult` contains `session_id`, `result_token`, `brief`, `results`, `counts`, `ranking`, `catalog`, and `created_at`. Count fields are `total`, `eligible`, `candidates`, `scored`, and `shown`.
 
@@ -128,7 +130,11 @@ Search tokens are encrypted/authenticated with AES-GCM, bound to the current req
 
 ## 7. Dara's optimization boundary
 
-`action: "plan"` generates deterministic seller questions and a draft opening message without contacting anyone. It includes battery/drive-unit warranty, battery condition, history, itemized fees, financing conditions, inspection, and timing questions. It invents neither a discount nor a target price. The plan can be exported.
+`action: "plan"` generates deterministic seller questions and a draft opening message without contacting anyone. It includes battery/drive-unit warranty, battery condition, history, itemized fees, financing conditions, inspection, and timing questions. Actual `target_price` remains null, provider quotes remain empty, and no provider job exists. The plan can be exported.
+
+Dara's `mapListing` and `scoreListing` are ported from commit `163fa478`: value 26%, evidence 23%, road trip 18%, model fit 8%, and mileage/year/battery 25%. They re-rank only the selected cars and preserve Jev's shortlist. Unknown battery uses an explicitly disclosed neutral 50 baseline; photo coverage is not visual inspection. See [docs/dara-integration.md](docs/dara-integration.md).
+
+A separate `synthetic_scenario` is produced only when every selection is synthetic and priced. Its demo rules assume opening at 92%, counter at 98%, and settlement at 95% of asking. The timeline and savings are simulations we added, not Dara's valuation, seller responses, or a prediction. Taxes and fees are excluded. Live, replay, mixed, or unpriced selections never receive simulated seller outcomes. The next deployment must be verified with a new plan; old conversations are not rewritten.
 
 Live dispatch requires all of the following: a valid result token, one to three distinct IDs from that result, explicit `contact_approved: true`, `OUTBOUND_CONTACT_ENABLED=true`, a configured Dara endpoint, and active live listings. The route reloads inventory and blocks dispatch if selected availability, price, seller ID, or live provenance changed.
 
@@ -162,11 +168,13 @@ A later purchase adapter would require a persisted approval tied to exact VIN, s
 
 ## 9. Photon and integration handoff
 
-The Eve implementation is in [eve-agent/](eve-agent/README.md), packaged separately for Vercel. The target demo is buyer iMessage to +1 (415) 605-7073 → Photon → Eve clarification and buyer confirmation → the verified Railway search API. The sender uses their registered personal device; personal sender numbers are not stored in repo documentation. The channel receives requests at `/eve/v1/photon` using portable `IMESSAGE_PROJECT_ID`, `IMESSAGE_PROJECT_SECRET`, and `IMESSAGE_WEBHOOK_SECRET`. The webhook is created and the signing secret stored. Actual inbound delivery and an observed iMessage reply remain pending.
+The Eve implementation is in [eve-agent/](eve-agent/README.md), packaged separately for Vercel. The demo is buyer iMessage to the recipient line assigned to that registered Photon sender → Photon → Eve clarification and buyer confirmation → the verified Railway search API. Shared recipient assignments can differ between users. The sender uses their registered personal device; personal sender numbers are not stored in repo documentation. The channel receives requests at `/eve/v1/photon` using portable `IMESSAGE_PROJECT_ID`, `IMESSAGE_PROJECT_SECRET`, and `IMESSAGE_WEBHOOK_SECRET`. The webhook is created and the signing secret stored. The user confirmed a real sent message and received reply. Activity showed the matching conversation with seven messages and five search results.
 
 The [Eve handoff](docs/eve-integration.md) describes the three implemented tools: clarify, confirmed search, and plan selected cars. The agent stores the latest result token and numbered-list mapping privately in durable Eve session state and omits the token from tool output. A reply such as “1 and 3” resolves against that session's result. The bearer API still shares one integration owner, so backend per-buyer authentication remains unimplemented. No contact or purchase tool is exposed. Provider acceptance and actual message delivery need separate evidence.
 
-The staged Activity tab polls the authenticated dashboard endpoint every three seconds. Its server proxy uses `EVE_AGENT_URL` and server-held `EVE_API_KEY` to read Eve's protected `/jevgotiator/activity` route. That route reads existing durable workflow/session events through the pinned `@workflow/world-vercel` runtime, without a new database. The view links messages, tool calls, shortlist, Jev trace, and plan to one selected conversation. It labels Photon versus HTTP operator sessions, keeps private tokens out of the browser, and reports unavailable data rather than substituting a conversation. A stored assistant reply proves generation; only its appearance on the sender's phone proves message delivery.
+The live Activity tab polls the authenticated dashboard endpoint every three seconds. Its server proxy uses `EVE_AGENT_URL` and server-held `EVE_API_KEY` to read Eve's protected `/jevgotiator/activity` route. That route reads existing durable workflow/session events through the pinned `@workflow/world-vercel` runtime, without a new database. The view links messages, tool calls, shortlist, Jev trace, and plan to one selected conversation. It labels Photon versus HTTP operator sessions, keeps private tokens out of the browser, and reports unavailable data rather than substituting a conversation. A stored assistant reply proves generation; only its appearance on the sender's phone proves message delivery.
+
+After the pending deployment, sending `/reset` in iMessage preserves the old conversation history and starts a new conversation on the next text. The dashboard’s **New web search** button separately clears local web state and its session-storage result, then returns to Search. Eve includes the actual draft message and dashboard link in its plan reply; it does not offer unsupported sending. Out-the-door amounts remain provisional until taxes and fees are verified.
 
 Chris should provide the export URL, authentication convention, one sanitized response, and pagination behavior. Dara should provide the POST/status endpoints, response example, idempotency behavior, and approved test contact. Team acceptance and live integration tests are still required.
 
@@ -174,12 +182,12 @@ Chris should provide the export URL, authentication convention, one sanitized re
 
 Run `npm test`, `npm run typecheck`, and `npm run build`. Exercise the dashboard with a normal request, no matches, missing history, an out-the-door budget, a deadline, and one-to-three selection. Verify that synthetic records cannot enter contact dispatch. A configured service is only proven by its successful request and user-visible result.
 
-The Vercel and Railway HTTP smoke tests passed on `ecfd8ca`: authenticated model clarification, live Jev search, and two selected plans. Railway also rejected synthetic contact; Vercel reported contact disabled. Eve production `4211660` separately passed three live HTTP operator turns: clarification, five search results, and a plan for option one. Eve health and authenticated operator requests returned 200; unauthenticated session creation returned 401, and unsigned Photon requests returned 400 for a missing signature. These results do not verify a Photon conversation, real inventory, or Dara execution.
+Vercel and Railway revision `5764a56` are verified, including Activity. Earlier HTTP smoke tests passed model clarification, live Jev search, two selected plans, and the synthetic contact guard. Eve separately passed clarify → five results → plan through the HTTP operator route. The user then confirmed an actual Photon reply on the phone; durable Activity records showed seven messages and five results for that conversation. This proves the tested transport and search path, not real inventory or seller execution.
 
-The new Activity implementation passed 44 root tests, TypeScript checking, and the Next.js build. Deployment verification and the personal-sender iMessage test remain pending.
+The landing page, dashboard route change, reset command, Dara intelligence port, and synthetic negotiation timeline await their next deployment. Re-run a fresh selected-car plan after deployment to verify the new structured output in both Eve and Activity. Historical conversations retain their original output.
 
-Use the [two-minute demo walkthrough](docs/demo-walkthrough.md): text a request, confirm Eve's brief, follow that Photon conversation in Activity, inspect its real Jev request and returned scores, reply with one to three choices, and show the plan. The new deployment and message test must pass before presenting this as a working iMessage flow. If transport is unavailable, use the already verified dashboard search and label that as a dashboard demonstration. Keep synthetic inventory, live inference, planning, and provider-reported outcomes visibly distinct.
+Use the [two-minute demo walkthrough](docs/demo-walkthrough.md). Keep synthetic inventory, live inference, deterministic intelligence, simulated negotiation, and provider-reported outcomes visibly distinct. If transport fails, use the dashboard and label the fallback accurately.
 
-Remaining production work includes durable records and approvals, authenticated multi-user identities, rate limiting, provider observability, a complete ranking evaluation, durable follow-up, and the verified Photon and seller integrations. No quality, market-coverage, negotiation-success, or purchase-completion claim is established by the demo.
+Remaining production work includes real inventory, durable seller approvals, authenticated multi-user identities, rate limiting, provider observability, ranking evaluation, and verified seller integrations. No market-coverage, negotiation-success, or purchase-completion claim is established by this demo.
 
 Historical source context: [team sketch](docs/team-sketch.md) and [provider research](docs/integration-research.md). Earlier StayMatch exploration belongs to the event archive, not this product.

@@ -50,3 +50,30 @@ export function publicSearch(snapshot: SearchSnapshot) {
   const { result_token: _secret, ...publicResult } = snapshot;
   return { ...publicResult, results: publicResult.results.map((result, index) => ({ position: index + 1, ...result })), seller_contacted: false };
 }
+
+export const daraIntelligenceSchema = z.object({
+  source: z.literal("dara-sample"), source_commit: z.string(), method: z.string(), assumptions: z.array(z.string()).max(10),
+  candidates: z.array(z.object({
+    listing_id: z.string(), rank: z.number().int().positive(), score: z.number().min(0).max(100),
+    signals: z.object({ value: z.number(), evidence: z.number(), road_trip: z.number(), model_fit: z.number(), mileage_year_battery: z.number() }),
+    unknowns: z.array(z.string()).max(20),
+  })).max(3),
+});
+export const optimizationSimulationSchema = z.object({
+  mode: z.literal("synthetic_scenario"),
+  assumptions: z.array(z.string().max(4000)).max(10),
+  candidates: z.array(z.object({
+    listing_id: z.string().max(200), asking_price: z.number().finite().positive(),
+    opening_offer: z.number().finite().nonnegative(), simulated_counter: z.number().finite().nonnegative(),
+    simulated_agreed_price: z.number().finite().nonnegative(), simulated_savings: z.number().finite().nonnegative(),
+    recommendation: z.string().max(4000),
+  })).min(1).max(3),
+  actions: z.array(z.object({ label: z.string().max(200), detail: z.string().max(4000), state: z.enum(["done", "pending", "blocked"]) })).max(10),
+  disclaimer: z.string().max(4000),
+});
+
+export const planResponseSchema = z.object({
+  id: z.string(), mode: z.literal("planning"), status: z.enum(["ready", "pending", "completed", "needs_review"]), summary: z.string(),
+  plans: z.array(z.object({ listing_id: z.string(), title: z.string(), asking_price: z.number().nullable(), target_price: z.null(), questions: z.array(z.string()), opening_message: z.string() })).max(3),
+  warning: z.string().nullable(), simulation: optimizationSimulationSchema.optional(), intelligence: daraIntelligenceSchema.optional(),
+});
