@@ -3,9 +3,11 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-Source = Literal["fb_marketplace", "carmax", "dealer", "synthetic"]
+Source = Literal["fb_marketplace", "craigslist", "carmax", "dealer", "synthetic"]
 TitleStatus = Literal["clean", "salvage", "rebuilt", "lien", "unknown"]
 Urgency = Literal["asap", "this_week", "this_month", "flexible"]
+TeslaModel = Literal["3", "Y", "S", "X", "Cybertruck"]
+AutopilotPackage = Literal["none", "AP", "EAP", "FSD"]
 
 
 class Location(BaseModel):
@@ -30,8 +32,8 @@ class HistoryReport(BaseModel):
 class CarListing(BaseModel):
     id: str
     vin: Optional[str] = None
-    make: str
-    model: str
+    make: Literal["Tesla"] = "Tesla"
+    model: TeslaModel
     year: int
     trim: Optional[str] = None
     mileage: int
@@ -47,21 +49,30 @@ class CarListing(BaseModel):
     listed_at: datetime
     title_status: TitleStatus = "unknown"
     how_soon: Optional[str] = None
+    # Tesla-specific, all optional
+    battery_range_mi: Optional[int] = None
+    autopilot_package: Optional[AutopilotPackage] = None
+    color: Optional[str] = None
+    charging_included: Optional[bool] = None
+    battery_health_pct: Optional[float] = None
 
 
 class SearchLocation(BaseModel):
-    zip: str
-    radius_miles: int = 15
+    city: Literal["San Francisco"] = "San Francisco"
+    zip: Optional[str] = None
+    sf_only: bool = True  # restrict to 941xx zips
 
 
 class PromptPackage(BaseModel):
+    make: Literal["Tesla"] = "Tesla"
+    models: list[TeslaModel] = Field(default_factory=list)  # empty = any
     budget_max_usd: Optional[int] = None
-    body_type: list[str] = Field(default_factory=list)
-    fuel_type: list[str] = Field(default_factory=list)
+    autopilot_min: Optional[AutopilotPackage] = None
+    min_range_mi: Optional[int] = None
     must_haves: list[str] = Field(default_factory=list)
     nice_to_haves: list[str] = Field(default_factory=list)
     urgency: Urgency = "flexible"
-    location: Optional[SearchLocation] = None
+    location: SearchLocation = Field(default_factory=SearchLocation)
     year_min: Optional[int] = None
     mileage_max: Optional[int] = None
 

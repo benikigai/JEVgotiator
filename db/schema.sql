@@ -1,11 +1,12 @@
--- JEVcar Postgres schema. Single store for listings, sessions, negotiation.
+-- JEVgotiator Postgres schema. Single store for listings, sessions, negotiation.
+-- Scope: used Tesla listings in San Francisco city proper (zip 941xx), populated by scraper/.
 -- CREATE EXTENSION IF NOT EXISTS vector;  -- optional pgvector, not needed for v1
 
 CREATE TABLE IF NOT EXISTS listings (
     id                  TEXT PRIMARY KEY,
     vin                 TEXT,
-    make                TEXT NOT NULL,
-    model               TEXT NOT NULL,
+    make                TEXT NOT NULL DEFAULT 'Tesla',
+    model               TEXT NOT NULL,                 -- 3 | Y | S | X | Cybertruck
     year                INT  NOT NULL,
     trim                TEXT,
     mileage             INT  NOT NULL,
@@ -21,12 +22,18 @@ CREATE TABLE IF NOT EXISTS listings (
     seller_type         TEXT CHECK (seller_type IN ('private', 'dealer')),
     seller_name         TEXT,
     seller_contact      TEXT,                           -- never exposed publicly
-    source              TEXT NOT NULL CHECK (source IN ('fb_marketplace', 'carmax', 'dealer', 'synthetic')),
+    source              TEXT NOT NULL CHECK (source IN ('fb_marketplace', 'craigslist', 'carmax', 'dealer', 'synthetic')),
     listing_url         TEXT,
     listed_at           TIMESTAMPTZ,
     title_status        TEXT NOT NULL DEFAULT 'unknown'
                         CHECK (title_status IN ('clean', 'salvage', 'rebuilt', 'lien', 'unknown')),
     how_soon            TEXT,
+    -- Tesla-specific (nullable)
+    battery_range_mi    INT,
+    autopilot_package   TEXT CHECK (autopilot_package IN ('none', 'AP', 'EAP', 'FSD')),
+    color               TEXT,
+    charging_included   BOOLEAN,
+    battery_health_pct  NUMERIC(5,2),
     raw                 JSONB,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
