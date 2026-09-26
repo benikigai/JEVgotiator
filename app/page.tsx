@@ -61,10 +61,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ [
       <section className="landing-hero landing-shell">
         <div className="landing-hero-copy">
           <div className="landing-eyebrow"><span /> Built at JEVathon, San Francisco</div>
-          <h1>Your next Tesla.<br /><span>Your terms.</span></h1>
-          <p className="landing-intro">Text us what you want. We turn 1,000 listings into five good picks, and give you a plan for the deal.</p>
-          <div className="landing-actions"><Link className="landing-button landing-button-dark" href={demoHref}>Open demo dashboard <ArrowUpRight size={19} /></Link><a className="landing-text-link" href="#architecture">See how it works <ArrowRight size={17} /></a></div>
-          <p className="landing-access-note">Demo code required. Sample inventory, real model scoring.</p>
+          <h1>Your next Tesla.<br className="landing-hero-break" /> Your terms.</h1>
+          <p className="landing-intro">Text us what you want. We turn 1,000 SF listings into five good picks and a plan for the deal.</p>
+          <div className="landing-actions"><Link className="landing-button landing-button-dark" href={demoHref}>Open dashboard <ArrowUpRight size={19} /></Link><a className="landing-text-link" href="#architecture">How it works <ArrowRight size={17} /></a></div>
+          <p className="landing-access-note">Sample inventory. Real Jev scoring.</p>
         </div>
         <div className="landing-hero-art">
           <div className="landing-art-top"><span>How we search</span><span className="landing-art-chip"><Zap size={13} /> Scored by Jev</span></div>
@@ -101,7 +101,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ [
 
       <section className="landing-team landing-shell" id="team"><div><span className="landing-kicker">The team</span><h2>Built together.</h2></div><div className="landing-team-members"><div><span className="landing-avatar">B</span><p><strong>Ben</strong><span>Integration & product</span></p></div><div><span className="landing-avatar">C</span><p><strong>Chris</strong><span>Data & catalog</span></p></div><div><span className="landing-avatar">D</span><p><strong>Dara</strong><span>Optimization</span></p></div></div></section>
 
-      <section className="landing-bottom-cta landing-shell"><div><span className="landing-kicker">Try it</span><h2>See the decisions behind the shortlist.</h2><p>Search, read Jev’s trace, and watch the conversation in the team demo.</p></div><Link className="landing-button landing-button-lime" href={demoHref}>Open demo dashboard <ArrowUpRight size={19} /></Link></section>
+      <section className="landing-bottom-cta landing-shell"><div><span className="landing-kicker">Try it</span><h2>See the decisions behind the shortlist.</h2><p>Search, read Jev’s trace, and watch the conversation in the team demo.</p></div><Link className="landing-button landing-button-lime" href={demoHref}>Open dashboard <ArrowUpRight size={19} /></Link></section>
     </main>
     <footer className="landing-footer landing-shell"><span>JEVgotiator. Built at JEVathon, San Francisco.</span><a href={githubHref} target="_blank" rel="noreferrer">View on GitHub <ArrowUpRight size={14} /></a></footer>
   </div>;
