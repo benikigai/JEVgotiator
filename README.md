@@ -39,17 +39,17 @@ Regenerate the deterministic import dataset with `npm run seed:catalog`. It writ
 
 ## Integration map
 
-- **Chris:** catalog consolidation and source freshness. [Catalog contract](docs/catalog-integration.md).
+- **Chris:** catalog consolidation plus the Eve agent on Vercel and Photon iMessage. [Catalog contract](docs/catalog-integration.md) and [Eve API handoff](docs/eve-integration.md).
 - **Dara:** optimization, seller contact, and quote collection. [Optimization contract](docs/optimization-integration.md).
 - **Ben:** dashboard, clarification, hard filters, Jev ranking, integration, and deployment.
-- **WhatsApp:** team coordination. **Photon:** planned buyer messaging; team number and webhook integration are pending.
+- **WhatsApp:** team coordination. **Buyer messaging:** Photon → Chris's Eve agent on Vercel → this API on Railway; end-to-end verification is pending.
 
 [BUILD-SPEC.md](BUILD-SPEC.md) describes the implemented architecture, routes, contracts, and remaining work. Runtime contracts live in [lib/contracts.ts](lib/contracts.ts). Files under `examples/` preserve the earlier design fixtures and are not the current HTTP request shapes.
 
 ## Known gaps
 
 - Inventory is synthetic until Chris's API is connected. The 30-candidate scoring cap is explicit; ranking does not evaluate the entire eligible pool.
-- There is no database, durable job queue, scheduled follow-up, or persistent approval ledger. Searches use session-bound encrypted result tokens and browser session storage.
+- This API has no database, durable job queue, scheduled follow-up, or persistent approval ledger. Browser searches use session-bound tokens; bearer integrations share an owner and must isolate tokens per Eve conversation.
 - Dara's adapter needs a verified endpoint with durable job storage and idempotency. Local planning makes no calls and invents no negotiated prices.
 - Photon, Browserbase ingestion, seller contact, and provider quote delivery are not established as working integrations by configuration alone.
 - Asking price does not prove an out-the-door budget. History, battery condition, availability, fees, and seller claims require verification.

@@ -43,13 +43,20 @@ test("missing credentials gives deterministic unscored results without an API ca
   assert.deepEqual(result.results.map((item) => [item.listing.id, item.score]), [["cheap", null], ["expensive", null]]);
   assert.match(result.warning!, /not configured/);
   assert.equal(result.estimated_cost_usd, 0);
+  assert.equal(result.trace?.outcome, "not_requested");
+  assert.equal(result.trace?.request_sent, false);
+  assert.deepEqual(result.trace?.questions, []);
+  assert.deepEqual(result.trace?.answers, []);
+  assert.deepEqual(result.trace?.composition, []);
 });
 
 test("valid batch scores keep evidence, explicit candidate paths, ranking and actual usage", async () => {
   process.env.TYPESAFE_API_KEY = "unit-test-key";
+  let sentRequest: { model: string; state: unknown; questions: Record<string, unknown> } | undefined;
   globalThis.fetch = (async (url, init) => {
     assert.equal(url, "https://api.typesafe.ai/v1/systemone");
     const request = JSON.parse(init!.body as string);
+    sentRequest = request;
     assert.equal(request.model, "jev-1.13.0");
     assert.equal(Object.keys(request.questions).length, 4);
     assert.match(request.questions.fit_1.instructions, /state\.listings\[1\]/);
@@ -66,6 +73,31 @@ test("valid batch scores keep evidence, explicit candidate paths, ranking and ac
   assert.ok(result.results[0].unknowns.some((value) => value.includes("Accident history")));
   assert.equal(result.input_tokens, 2500);
   assert.equal(result.estimated_cost_usd, 2500 * 0.042 / 1_000_000);
+  const trace = result.trace!;
+  assert.equal(trace.outcome, "scored");
+  assert.equal(trace.request_sent, true);
+  assert.equal(trace.requested_model, sentRequest!.model);
+  assert.equal(trace.returned_model, "jev-1.13.0");
+  assert.deepEqual({ buyer_request: trace.buyer_request, listings: trace.candidates.map((candidate) => candidate.model_context) }, sentRequest!.state);
+  for (const question of trace.questions) {
+    assert.deepEqual({ type: question.type, instructions: question.instructions, criteria: question.criteria }, sentRequest!.questions[question.question_id]);
+    assert.equal(question.listing_id, question.question_id.endsWith("_0") ? "a" : "b");
+  }
+  assert.deepEqual(trace.answers.map(({ question_id, listing_id, noul, used }) => ({ question_id, listing_id, noul, used })), [
+    { question_id: "fit_0", listing_id: "a", noul: 0.3, used: true },
+    { question_id: "maintenance_0", listing_id: "a", noul: 0.8, used: true },
+    { question_id: "fit_1", listing_id: "b", noul: 0.9, used: true },
+    { question_id: "maintenance_1", listing_id: "b", noul: 0.7, used: true },
+  ]);
+  assert.equal(trace.composition[0].listing_id, "b");
+  assert.equal(trace.composition[0].rank, 1);
+  for (const composition of trace.composition) {
+    const computed = composition.factors.reduce((sum, factor) => sum + factor.contribution, 0);
+    assert.ok(Math.abs(computed - composition.final_score) < 1e-12);
+    assert.ok(Math.abs(composition.factors.reduce((sum, factor) => sum + factor.normalized_weight, 0) - 1) < 1e-12);
+    assert.equal(composition.final_score, result.results.find((item) => item.listing.id === composition.listing_id)!.score);
+  }
+  assert.doesNotMatch(JSON.stringify(trace), /unit-test-key|Authorization|Bearer/);
 });
 
 test("missing maintenance is unknown, not fabricated or treated as poor maintenance", async () => {
@@ -80,6 +112,8 @@ test("missing maintenance is unknown, not fabricated or treated as poor maintena
   assert.equal(result.results[0].factors.length, 1);
   assert.equal(result.results[0].score, 0.7);
   assert.ok(result.results[0].unknowns.includes("Maintenance records are not supplied."));
+  assert.equal(result.trace?.composition[0].factors.length, 1);
+  assert.equal(result.trace?.composition[0].factors[0].normalized_weight, 1);
 });
 
 test("partial, invalid, and out-of-range answers fail closed to unscored results", async () => {
@@ -95,6 +129,10 @@ test("partial, invalid, and out-of-range answers fail closed to unscored results
     assert.equal(result.results[0].score, null);
     assert.match(result.warning!, /incomplete or invalid/);
     assert.equal(result.input_tokens, 1000);
+    assert.equal(result.trace?.outcome, "failed");
+    assert.equal(result.trace?.request_sent, true);
+    assert.ok(result.trace?.answers.every((answer) => !answer.used));
+    assert.deepEqual(result.trace?.composition, []);
   }
 });
 
@@ -137,4 +175,26 @@ test("price priority is a transparent deterministic factor", async () => {
   assert.equal(result.results[0].listing.id, "cheap");
   assert.equal(result.results[0].factors[1].name, "Relative asking price");
   assert.equal(result.results[0].factors[1].score, 1);
+  assert.equal(result.trace?.composition[0].factors[1].source, "code");
+  assert.equal(result.trace?.composition[0].factors[1].weight, 0.4);
+});
+
+test("trace and requests are bounded to 30 candidates and exclude code-only price and mileage from model state", async () => {
+  process.env.TYPESAFE_API_KEY = "unit-test-key";
+  globalThis.fetch = (async (_url, init) => {
+    const request = JSON.parse(init!.body as string);
+    assert.equal(request.state.listings.length, 30);
+    assert.equal(Object.keys(request.questions).length, 30);
+    assert.ok(request.state.listings.every((listing: Record<string, unknown>) => !("price" in listing) && !("mileage" in listing)));
+    return response(Object.fromEntries(Object.keys(request.questions).map((id) => [id, { type: "noul", noul: 0.7 }])));
+  }) as typeof fetch;
+  const cars = Array.from({ length: 31 }, (_, index) => ({ ...car(`car-${index}`, 20000 + index, null), description: "x".repeat(4000) }));
+  const result = await rankCars(cars, brief);
+  assert.equal(result.trace?.candidates.length, 30);
+  assert.equal(result.trace?.questions.length, 30);
+  assert.equal(result.trace?.answers.length, 30);
+  assert.equal(result.trace?.composition.length, 30);
+  assert.equal(result.trace?.candidates[0].asking_price, 20000);
+  assert.equal(result.trace?.candidates[0].mileage, 50000);
+  assert.equal(String(result.trace?.candidates[0].model_context.description).length, 1001);
 });

@@ -33,7 +33,16 @@ export type Car = {
 export type Catalog = { cars: Car[]; mode: "live" | "synthetic" | "mixed"; source: string; fetched_at: string; warnings: string[] };
 export type Factor = { name: string; score: number; evidence: string };
 export type RankedCar = { listing: Car; score: number | null; factors: Factor[]; reasons: string[]; unknowns: string[]; verification_required: boolean };
-export type Ranking = { results: RankedCar[]; mode: "live_jev" | "unscored_fallback"; model: string | null; input_tokens: number; estimated_cost_usd: number; latency_ms: number; warning: string | null };
+export type JevTrace = {
+  outcome: "scored" | "not_requested" | "failed";
+  request_sent: boolean; requested_model: string; returned_model: string | null;
+  buyer_request: string; hard_filter_role: string; algorithm: string; note: string;
+  candidates: { listing_id: string; label: string; asking_price: number | null; mileage: number | null; state_path: string; model_context: Record<string, string | number | null> }[];
+  questions: { question_id: string; listing_id: string; factor: string; type: "noul"; instructions: string; criteria: { true: string; false: string } }[];
+  answers: { question_id: string; listing_id: string; type: "noul" | null; noul: number | null; valid: boolean; used: boolean }[];
+  composition: { listing_id: string; rank: number; final_score: number; factors: { name: string; source: "jev" | "code"; score: number; weight: number; normalized_weight: number; contribution: number }[] }[];
+};
+export type Ranking = { results: RankedCar[]; mode: "live_jev" | "unscored_fallback"; model: string | null; input_tokens: number; estimated_cost_usd: number; latency_ms: number; warning: string | null; trace?: JevTrace };
 export type SearchResult = {
   session_id: string; result_token: string; brief: Brief; results: RankedCar[];
   counts: { total: number; eligible: number; candidates: number; scored: number; shown: number };
