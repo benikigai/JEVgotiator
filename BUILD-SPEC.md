@@ -200,6 +200,10 @@ Suggested three-minute demo: 0:00 buyer request and clarification; 0:30 filtered
 
 ## 11. Immediate decisions and handoff
 
+Current team checkpoint, reported by Ben on September 26: WhatsApp group established for coordination; Chris is consolidating the database; Dara is building optimization; Ben owns planning and integration. No team acceptance of the proposed contracts or working integration is claimed yet.
+
+Next concrete handoffs: Chris supplies five normalized listing records and his query interface; Dara supplies the optimization entry point and one sample quote/status result; Ben connects those boundaries through the buyer brief, filtering, Jev ranking and selection flow. Share contract changes through the team group and keep the agreed version in this repository. WhatsApp is team coordination; Photon iMessage is the buyer interface.
+
 Ben: confirm Chris's database/query interface, Dara's call provider and worker requirements, the Photon line, the Browserbase prototype revision, the retailer source name, and actual history-report access. Until then, the adapters and hosting choices above are proposals. Do not install providers or add parallel frameworks just to fill empty folders.
 
 First integration checkpoint: one synthetic brief plus five listing fixtures passes through Chris's query contract and Ben's ranker; Dara accepts one non-dispatchable negotiation job. Next checkpoint: replace each fixture boundary with verified live behavior and preserve the source-mode labels.
