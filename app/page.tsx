@@ -53,7 +53,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ [
   return <div className="landing">
     <header className="landing-header landing-shell">
       <Link href="/" className="landing-brand" aria-label="JEVgotiator home"><span className="landing-brand-mark"><ArrowUpRight size={23} strokeWidth={2.7} /></span>JEVgotiator<span className="landing-brand-dot">.</span></Link>
-      <nav className="landing-nav" aria-label="Main navigation"><a href="#architecture">How it works</a><a href="#stack">The stack</a><a href="#team">The team</a></nav>
+      <nav className="landing-nav" aria-label="Main navigation"><a href="#architecture">How it works</a><a href="#comparison">Live comparison</a><a href="#stack">The stack</a><a href="#team">The team</a></nav>
       <a className="landing-github" href={githubHref} target="_blank" rel="noreferrer"><GitBranch size={16} /> Source <ArrowUpRight size={15} /></a>
     </header>
 
@@ -64,7 +64,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ [
           <h1>Your next Tesla.<br /><span>Your terms.</span></h1>
           <p className="landing-intro">Text us what you want. We turn 1,000 listings into five good picks, and give you a plan for the deal.</p>
           <div className="landing-actions"><Link className="landing-button landing-button-dark" href={demoHref}>Open demo dashboard <ArrowUpRight size={19} /></Link><a className="landing-text-link" href="#architecture">See how it works <ArrowRight size={17} /></a></div>
-          <p className="landing-access-note">Demo code required. Sample inventory, real model scoring.</p>
+          <p className="landing-access-note">Open hackathon demo. Sample inventory, real model scoring.</p>
         </div>
         <div className="landing-hero-art">
           <div className="landing-art-top"><span>How we search</span><span className="landing-art-chip"><Zap size={13} /> Scored by Jev</span></div>
@@ -79,6 +79,15 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ [
         <div><strong>30<span> candidates</span></strong><p>Cars Jev scores per search</p></div>
         <div><strong>5<span> matches</span></strong><p>Cars in your shortlist</p></div>
         <div><strong>1–3<span> picks</span></strong><p>Cars you take to the deal</p></div>
+      </section>
+
+      <section className="benchmark landing-shell" id="comparison" aria-labelledby="benchmark-heading">
+        <div className="landing-section-heading"><div><span className="landing-kicker">Measured demo run · September 26, 2026</span><h2 id="benchmark-heading">One Tesla brief. Two search paths.</h2></div><p>Black Model 3, 2019 or newer, at most $30,000 and 80,000 miles, in San Francisco city.</p></div>
+        <div className="benchmark-grid">
+          <article><span className="benchmark-path">Browser search</span><strong>4+ minutes</strong><p>Google to TrueCar to CARFAX. TrueCar required human verification. CARFAX needed separate year, price, mileage, color, and city checks. No exact-city black match was verified in the inspected first page.</p><dl><div><dt>Browser actions</dt><dd>Multiple sites and filters</dd></div><div><dt>Model tokens</dt><dd>Not metered</dd></div><div><dt>Inventory</dt><dd>Public listings</dd></div></dl></article>
+          <article><span className="benchmark-path">JEVgotiator API</span><strong>728 ms</strong><p>One live API call filtered 1,000 demo Teslas to 19 eligible cars. Jev scored all 19 and returned five with a decision trace.</p><dl><div><dt>Jev input</dt><dd>8,167 tokens</dd></div><div><dt>Estimated Jev input cost</dt><dd>$0.000343</dd></div><div><dt>Inventory</dt><dd>Synthetic demo data</dd></div></dl></article>
+        </div>
+        <p className="benchmark-note">Browser timing is an observed assisted search, not a metered Muse run. Jev cost covers estimated input only, not browser, hosting, Photon, or total billed usage. The inventories differ, so this demonstrates workflow speed rather than listing quality parity.</p>
       </section>
 
       <section className="landing-architecture" id="architecture">

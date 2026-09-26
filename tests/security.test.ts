@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
 import { POST as optimize } from "../app/api/v1/optimize/route";
+import { GET as getDemoSession, POST as postDemoSession } from "../app/api/session/route";
 import { jsonBody, matches, seal, session, signInResponse, unseal } from "../lib/security";
 import type { Brief, Car, RankedCar } from "../lib/contracts";
 
 const originalFetch = globalThis.fetch;
-const envKeys = ["APP_SECRET", "APP_ORIGIN", "NODE_ENV", "INTEGRATION_API_KEY", "OUTBOUND_CONTACT_ENABLED", "DARA_API_URL", "CATALOG_API_URL"];
+const envKeys = ["APP_SECRET", "APP_ORIGIN", "NODE_ENV", "INTEGRATION_API_KEY", "OUTBOUND_CONTACT_ENABLED", "DARA_API_URL", "CATALOG_API_URL", "OPEN_DEMO", "DEMO_ACCESS_CODE"];
 let originalEnv: Record<string, string | undefined>;
 let fetchCalls = 0;
 beforeEach(() => {
@@ -105,6 +106,17 @@ test("sign-in produces an HttpOnly, SameSite=Lax, Secure cookie on HTTPS", () =>
   assert.match(cookie, /Path=\//i);
   const owner = session(new Request("https://jevgotiator.example", { headers: { cookie: cookie.split(";")[0] } }));
   assert.match(owner, /^[\da-f-]{36}$/);
+});
+
+test("hackathon demo issues a session without a code and can restore the gate", async () => {
+  process.env.DEMO_ACCESS_CODE = "test-code";
+  delete process.env.OPEN_DEMO;
+  const request = () => new Request("https://jevgotiator.example/api/session", { method: "POST", headers: { origin: "https://jevgotiator.example" }, body: "{}" });
+  assert.equal((await (await getDemoSession(new Request("https://jevgotiator.example/api/session"))).json()).code_required, false);
+  assert.equal((await postDemoSession(request())).status, 200);
+  process.env.OPEN_DEMO = "false";
+  assert.equal((await (await getDemoSession(new Request("https://jevgotiator.example/api/session"))).json()).code_required, true);
+  assert.equal((await postDemoSession(request())).status, 401);
 });
 
 test("cross-origin and oversized JSON requests reject", async () => {
