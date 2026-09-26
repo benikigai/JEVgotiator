@@ -53,10 +53,12 @@ Search and clarification use short HTTP requests. Scraping, calls, negotiation, 
 
 ## Team ownership
 
+Team coordination is in WhatsApp. Ben's September 26 update: Chris is actively consolidating the database, and Dara is building the optimization layer. This is reported work in progress; their implementations and shared contracts have not yet been integration-tested here. Photon iMessage remains the proposed buyer-facing channel.
+
 | Owner | Deliverable | Integration boundary |
 | --- | --- | --- |
-| Chris | Listing ingestion, master car database, freshness and deduplication | Versioned `CarListing` records and an eligible-listings query |
-| Dara | Pricing intelligence, seller calls, negotiation, purchase coordination and follow-up | `NegotiationJob` in; structured events and quotes out |
+| Chris | Database consolidation, listing ingestion, freshness and deduplication | Versioned `CarListing` records and an eligible-listings query |
+| Dara | Optimization layer: pricing intelligence, seller calls, negotiation, purchase coordination and follow-up | `NegotiationJob` in; structured events and quotes out |
 | Ben | Plan, public API, buyer brief, Jev ranking, Photon adapter and integration | Shared contracts, user journey, deployment and demo |
 
 Ben owns changes to shared contracts after checking them with Chris and Dara. Each person keeps their existing implementation choices where they satisfy the contract.
