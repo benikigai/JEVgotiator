@@ -1,0 +1,139 @@
+/* Projector-first type scale and contrast. Loaded last so it wins the cascade. */
+:root {
+  --ink: #111114;
+  --muted: #3f3f46;
+  --muted-dark-bg: #c9c9d1;
+  --text: 18px;
+  --text-small: 15px;
+  --text-caption: 14px;
+}
+
+html { font-size: var(--text); }
+body { font-size: var(--text); line-height: 1.5; font-weight: 500; color: var(--ink); letter-spacing: 0; }
+* { letter-spacing: 0; }
+p { max-width: 70ch; line-height: 1.5; }
+h1, h2, h3 { line-height: 1.2; }
+h1 { font-size: 48px; font-weight: 700; letter-spacing: -0.01em; max-width: 24ch; }
+h1 span, h1 em, .landing h1 span { font-weight: 600; }
+h2 { font-size: 28px; font-weight: 700; }
+h3 { font-size: 20px; font-weight: 700; }
+.compact h1 { font-size: 40px; }
+label, input, select, textarea, button { font-size: var(--text-small); font-weight: 500; }
+input, select { color: var(--ink); }
+small, time, code { font-size: var(--text-small); }
+
+/* Every secondary-text color in the app collapses to one legible grey. */
+.quiet, .eyebrow, .tiny-note, .page-heading p, .results-heading p, .inventory-intro p, .car-title p, .car-specs, .reasons > span,
+.source-footnote, .data-notes, .breadcrumb, .location-pill, .search-box-heading .quiet, .prompt-chips button, .pipeline-time,
+.deal-banner p, .next-step p, .empty-state p, .timeline-item p, .question-list li, .opening-message p, .quote-row p, .quote-row small,
+.connection-card p, .integration-note p, .factor p, .factor span, .modal-body > p, .unknown-list, .trace-description, .trace-stages p,
+.trace-meta, .trace-table small, .trace-criteria p, .trace-formula small, .trace-question > code, .activity-connect p, .activity-tool small,
+.activity-counts span, .activity-car small, .activity-empty, .activity-empty-note, .activity-plan ul, .intelligence-method,
+.intelligence-signals > div, .intelligence-panel details, .scenario-table td small, .scenario-action p, .login-card > p, .login-note,
+.landing-intro, .landing-access-note, .landing-stats p, .landing-section-heading > p, .landing-flow p, .landing-flow-top span,
+.landing-principles p, .landing-tech, .landing-stack-card p, .landing-team-members p span, .landing-footer, .landing-eyebrow, .landing-kicker,
+.landing-principle-number, .landing-nav, .brand-small, .workspace-label, .sidebar-note p, .sidebar-footer small {
+  color: var(--muted);
+  font-size: var(--text-small);
+  font-weight: 500;
+  text-transform: none;
+}
+.eyebrow, .landing-eyebrow, .landing-kicker, .landing-principle-number, .workspace-label, .rank-label, .status-label, .scenario-badge, .trace-table th { font-size: var(--text-caption); font-weight: 700; }
+.page-heading p, .results-heading p, .inventory-intro p, .deal-banner p, .next-step p, .empty-state p, .question-list li, .opening-message p,
+.connection-card p, .integration-note p, .modal-body > p, .intelligence-method, .landing-section-heading > p, .landing-principles p, .landing-stack-card p,
+.activity-empty p, .trace-description, .trace-stages p, .notice, .error, .loading-strip { font-size: var(--text); }
+.page-heading p { margin-top: 14px; }
+
+/* Text on dark surfaces. */
+.sidebar, .sidebar nav button, .sidebar-note strong { color: #f5f5f7; }
+.sidebar nav button { font-size: var(--text-small); }
+.sidebar nav button.active { color: var(--ink); }
+.pipeline > div:not(.pipeline-time) { font-size: 16px; }
+.trace-invitation > div { font-size: var(--text); color: var(--ink); }
+.landing-art-bottom { padding-bottom: 70px; }
+.brand-small, .workspace-label, .sidebar-note p, .sidebar-footer small, .scope-tag small, .trace-stage-jev .eyebrow, .trace-stage-jev p,
+.landing-flow-jev p, .landing-flow-jev .landing-flow-top span, .landing-bottom-cta p, .landing-bottom-cta .landing-kicker, .login-art > p, .login-location,
+.pipeline > div:not(.pipeline-time), .pipeline > svg, .pipeline-time, .message-bubble.user, .message-bubble.user time { color: var(--muted-dark-bg); }
+.pipeline > div > span:first-child { font-size: 28px; }
+.message-bubble.user p, .message-bubble.user strong { color: #fff; }
+.scope-tag { background: var(--ink); color: #fff; }
+
+/* Badges, chips, and buttons. */
+.number-chip, .data-badge, .match-pill, .mode-pill, .image-note, .status-label, .scenario-badge, .activity-status, .nav-count, .selection-bar strong,
+.select-button, .text-button, .trace-constraints span, .trace-table, .trace-table button, .scenario-table, .scenario-table th, .timeline-item strong,
+.activity-tool strong, .activity-car strong, .intelligence-candidate h3, .intelligence-signals strong, .scenario-action strong, .quote-row strong,
+.deal-banner strong, .search-box-heading strong, .checks label, .approval, .results-heading select, .factor > div { font-size: var(--text-small); font-weight: 600; }
+.primary, .secondary, .subtle-button, .landing-button, .landing-text-link, .landing-github { font-size: var(--text-small); font-weight: 600; min-height: 46px; }
+.primary.wide, .login-card .primary { font-size: 16px; }
+.search-box textarea { font-size: 20px; line-height: 1.5; min-height: 110px; }
+.prompt-chips button { padding: 9px 12px; color: var(--ink); background: #fff; border-color: #c9c9d1; }
+.select-button { padding: 10px 14px; }
+.text-button { color: var(--ink); }
+
+/* Text over photos or illustrations gets a solid backing. */
+.image-note, .mode-pill, .rank-label { background: #fff; color: var(--ink); padding: 5px 9px; border-radius: 6px; }
+.match-pill { background: var(--ink); color: #fff; }
+.landing-art-bottom > span, .landing-illustration-label, .landing-art-top { background: var(--ink); color: #fff; padding: 8px 12px; border-radius: 8px; backdrop-filter: none; }
+.landing-art-top { font-size: var(--text-caption); font-weight: 600; margin: 24px 24px 0; padding: 0; background: none; display: flex; gap: 12px; }
+.landing-art-top > span:first-child { background: var(--ink); color: #fff; padding: 8px 12px; border-radius: 8px; }
+.landing-art-chip { font-size: var(--text-caption); font-weight: 700; }
+.landing-illustration-label { font-size: var(--text-caption); }
+.landing-art-bottom > span { font-size: 24px; line-height: 1.3; }
+
+/* Cards. */
+.car-title h3 { font-size: 20px; }
+.car-title > strong { font-size: 22px; }
+.car-title p, .car-specs, .reasons > span { font-size: 16px; }
+.reasons > span { line-height: 1.45; }
+.card-footer button { font-size: var(--text-small); }
+.results-heading h2, .inventory-intro h2 { font-size: 28px; }
+.results-heading h2 > span { font-size: var(--text-small); padding: 4px 10px; }
+.trace-stages h2 { font-size: 36px; }
+.trace-stages strong, .activity-connect strong, .deal-plan .section-line h2, .intelligence-panel .section-line h2 { font-size: 22px; }
+.activity-counts strong, .intelligence-candidate-top > strong { font-size: 30px; }
+.trace-formula p { font-size: 18px; }
+.message-bubble p, .activity-plan p, .activity-plan li, .activity-plan summary, .activity-results > p { font-size: 17px; line-height: 1.5; }
+.message-bubble > div { font-size: var(--text-small); }
+.section-line h2 { font-size: 22px; }
+.deal-timeline h3 { font-size: 20px; }
+.timeline-item > span, .scenario-action > span { width: 28px; height: 28px; font-size: 14px; }
+.brief-grid { gap: 20px; }
+.connection-card code { font-size: var(--text-small); color: var(--ink); }
+
+/* Login. */
+.login-art h1 { font-size: 56px; letter-spacing: -0.01em; line-height: 1.1; }
+.login-card h2 { font-size: 34px; }
+.login-card input { font-size: 18px; }
+
+/* Landing. */
+.landing h1 { font-size: 56px; line-height: 1.1; letter-spacing: -0.01em; }
+.landing h2 { font-size: 40px; letter-spacing: -0.01em; line-height: 1.15; }
+.landing-intro { font-size: 20px; line-height: 1.5; max-width: 34ch; }
+.landing-nav { font-size: 16px; color: var(--ink); }
+.landing-flow h3, .landing-principles h3, .landing-stack-card h3 { font-size: 20px; }
+.landing-flow li { padding: 20px 18px 22px; }
+.landing-flow h3 { font-size: 18px; }
+.landing-flow-jev h3 { color: #fff; }
+.landing-flow p { font-size: var(--text-small); margin-top: 6px; }
+.landing-stats strong { font-size: 36px; }
+.landing-stats strong span { font-size: 18px; font-weight: 500; color: var(--muted); }
+.landing-proof p { font-size: var(--text); color: #fff; }
+.landing-proof strong { color: #fff; }
+.landing-proof > a { font-size: var(--text-small); font-weight: 600; }
+.landing-bottom-cta h2 { font-size: 36px; }
+.landing-team-members strong { font-size: 18px; }
+.landing-avatar { font-size: 18px; font-weight: 700; }
+.landing-principle-number { color: var(--muted); }
+.landing-hero-copy p { max-width: 34ch; }
+
+@media (max-width: 1200px) {
+  h1, .landing h1 { font-size: 44px; }
+  .compact h1 { font-size: 36px; }
+  .landing h2 { font-size: 34px; }
+}
+@media (max-width: 800px) {
+  html, body { font-size: 17px; }
+  h1, .landing h1, .login-art h1 { font-size: 38px; }
+  .compact h1 { font-size: 32px; }
+  .search-box textarea { font-size: 18px; }
+}
