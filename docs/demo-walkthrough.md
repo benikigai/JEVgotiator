@@ -1,10 +1,10 @@
 # Two-minute JEVgotiator demo
 
-Status: Vercel, Railway, and Eve `82ee96a` are deployed. Live messages, Jev tools, landing, and browser reset are verified. The user confirmed an actual iMessage reply and the `/reset` acknowledgment followed by a fresh reply. A fresh Eve plan returned Dara intelligence and a labeled synthetic negotiation scenario.
+Status: Vercel, Railway, and Eve are deployed; the core intelligence flow was verified at `82ee96a` and participant names at `2cf8f46`. Live messages, Jev tools, landing, and browser reset are verified. The user confirmed an actual iMessage reply and the `/reset` acknowledgment followed by a fresh reply. A fresh Eve plan returned Dara intelligence and a labeled synthetic negotiation scenario.
 
 ## Before presenting
 
-Open [the Activity dashboard](https://jevgotiator.vercel.app/dashboard?view=activity) and sign in. Text the recipient line assigned to your Photon-registered sender; assignments can differ per user. Keep personal numbers, access codes, and credentials off the shared screen and out of the repo. Confirm the feed identifies the conversation as **Photon iMessage**, not an HTTP operator test.
+Open [the Activity dashboard](https://jevgotiator.vercel.app/dashboard?view=activity) and sign in. Text the recipient line assigned to your Photon-registered sender; assignments can differ per user. Keep personal numbers, access codes, and credentials off the shared screen and out of the repo. Choose the presenter under **Person**, then **Follow latest** for that person. Confirm the feed identifies the conversation as **Photon iMessage**, not an HTTP operator test. Recent messages and observed workflow stages are the main presentation view; expand full history only when needed.
 
 Send `/reset` before rehearsing. Prior history stays available; your next text starts a fresh conversation. Use a new plan to show Dara intelligence because old plans are not rewritten. For a dashboard-only restart, **New web search** clears local web results and returns to Search without resetting iMessage history. Eve’s plan reply includes a draft message and dashboard link; it does not send the draft to a seller.
 
