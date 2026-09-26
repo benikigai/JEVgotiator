@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { planRequest, publicSearch, type SearchSnapshot } from "../agent/lib/contracts";
+import { planRequest, publicSearch, searchResponseSchema, type SearchSnapshot } from "../agent/lib/contracts";
 import { callApi } from "../agent/lib/api";
 
 function snapshot(id: string): SearchSnapshot {
@@ -26,6 +26,18 @@ test("missing, expired, duplicated, and out-of-range selections fail closed", ()
   assert.throws(() => planRequest({ ...snapshot("old"), created_at: "2020-01-01T00:00:00.000Z" }, [1]), /expired/);
   assert.throws(() => planRequest(snapshot("a"), [1, 1]), /distinct/);
   assert.throws(() => planRequest(snapshot("a"), [3]), /not in this conversation/);
+});
+test("the public search retains Jev evidence while stripping unrecognized credential fields", () => {
+  const data = snapshot("trace");
+  const parsed = searchResponseSchema.parse({ ...data, ranking: { ...data.ranking, input_tokens: 123, trace: {
+    outcome: "not_requested", request_sent: false, requested_model: "jev", returned_model: null,
+    buyer_request: "Tesla under 30k", hard_filter_role: "deterministic", algorithm: "weighted", note: "No request",
+    candidates: [], questions: [], answers: [], composition: [], api_key: "must-not-pass",
+  } } });
+  const output = publicSearch(parsed);
+  assert.equal(output.ranking.input_tokens, 123);
+  assert.equal(output.ranking.trace?.outcome, "not_requested");
+  assert.doesNotMatch(JSON.stringify(output), /must-not-pass|api_key|private-token|result_token/);
 });
 test("the API client refuses contact dispatch and never follows redirects with credentials", async () => {
   const priorUrl = process.env.JEVGOTIATOR_API_URL, priorKey = process.env.JEVGOTIATOR_API_KEY;
