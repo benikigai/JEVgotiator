@@ -20,7 +20,7 @@ The profile is a product-demo persona, never a real person. It is intentionally 
 flowchart LR
   P[Synthetic buyer profile] --> R[Ranking preferences]
   U[Buyer controls] --> R
-  M[MarketCheck live inventory] --> A[/api/listings]
+  M[MarketCheck live inventory] --> A["API route: /api/listings"]
   A --> R
   R --> T[Top 5 Tesla matches]
   V[Photos + VIN records] -. structured evidence via JEV .-> R
