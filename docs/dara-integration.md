@@ -2,9 +2,9 @@
 
 `lib/dara-intelligence.ts` ports `mapListing` from `dara-sample/api/listings.js` and `scoreListing` from `dara-sample/app.js` at branch commit `163fa4787cb9151b76af917f643483ddb0f7f97e`. It evaluates only the buyer's selected cars after Jev produces its shortlist. It preserves the original Jev results.
 
-Dara's default weights are value 26, evidence 23, road trip 18, model fit 8, and mileage/year/battery 25. The evidence composite weights photo coverage 55%, title records 25%, and the neutral battery baseline 20%. Price, mileage, model, year, photos, and title map from the canonical car contract. Missing VIN receives no credit. Unknown battery remains Dara's 50 baseline and is explicitly labeled unknown. The original model-based social score is called model fit because no personal social profile is supplied. All cars still require inspection.
+Dara's original evidence trace uses value 26, evidence 23, road trip 18, model fit 8, and mileage/year/battery 25. The evidence composite weights photo coverage 55%, title records 25%, and the neutral battery baseline 20%. Price, mileage, model, year, photos, and title map from the canonical car contract. Missing VIN receives no credit. Unknown battery remains Dara's 50 baseline and is explicitly labeled unknown. All cars still require inspection.
 
-The social profile in the source branch is a fictional Maya Rivera fixture with preset lifestyle tags. Its API assigns a model-based social score; it does not connect to Instagram, authenticate a social account, import a public profile, or analyze a buyer. No live social personalization is implemented here.
+The dashboard has a user-approved, static Dara profile lens. Its initial re-rank weights are value 21, well-kept evidence 28, road-trip readiness 16, personal lens 10, and the remaining vehicle evidence. The profile image and tags are bundled with the app from a public profile the buyer explicitly approved. It does not connect to Instagram, authenticate a social account, import posts at runtime, or make sensitive inferences. The buyer can change every weight, while the original Jev evidence trace remains available.
 
 The branch contains a MarketCheck inventory adapter but no negotiation or contact implementation. This integration makes no MarketCheck request and adds no credential or dependency.
 
