@@ -154,3 +154,22 @@ small, time, code { font-size: var(--text-small); }
 .flow-stage.done .flow-arrow { color: #c8ff4a; }
 .flow-meta { flex: 1 1 100%; padding: 12px 16px 0; color: var(--muted-dark-bg); font-size: var(--text-small); border-top: 1px solid #2a2a30; margin-top: 12px; }
 @media (max-width: 1200px) { .flow-stage { min-width: 30%; } .flow-arrow { display: none; } }
+
+/* Card score bar. */
+.score-bar { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; margin-top: 14px; font-size: var(--text-small); font-weight: 600; color: var(--muted); }
+.score-bar > div { height: 8px; border-radius: 4px; background: #e3e3e8; overflow: hidden; }
+.score-bar i { display: block; height: 100%; background: var(--ink); border-radius: 4px; }
+.score-bar strong { font-size: 18px; color: var(--ink); min-width: 2ch; text-align: right; }
+
+/* Negotiation timeline. */
+.negotiation { display: grid; gap: 18px; margin: 24px 0; }
+.negotiation-row { padding: 18px 20px 8px; border: 1px solid #e3e3e8; border-radius: 14px; background: #fff; color: var(--ink); }
+.negotiation-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 4px; }
+.negotiation-head strong { font-size: 20px; }
+.negotiation-head span { font-size: var(--text-small); color: var(--muted); font-weight: 600; }
+.negotiation-chart { width: 100%; max-width: 860px; height: auto; display: block; }
+.negotiation-price { font: 700 17px Manrope, var(--font); fill: var(--ink); }
+.negotiation-step { font: 600 14px var(--font); fill: var(--muted); }
+.scenario-disclaimer, .intelligence-assumptions p, .intelligence-panel li, .tiny-note, .sidebar-note p { font-size: var(--text-small); line-height: 1.5; }
+.scope-tag { font-size: var(--text-small); }
+.scope-tag small { font-size: var(--text-caption); }
