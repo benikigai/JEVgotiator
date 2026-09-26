@@ -223,3 +223,5 @@ input:focus, select:focus { border-color: var(--ink); box-shadow: 0 0 0 4px rgba
 .data-badge { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
 .flow, .trace-stages .trace-stage-jev, .landing-flow .landing-flow-jev, .landing-proof, .landing-bottom-cta, .scope-tag, .pipeline { background: var(--ink); color: #fff; border-radius: var(--radius-card); }
 .tiny-line, .landing-eyebrow > span { background: var(--signal); }
+.trace-source, .activity-toolbar > strong, .activity-session-control { font-size: var(--text-small); color: var(--ink); }
+.activity-toolbar > strong { font-size: 18px; }
