@@ -4,7 +4,7 @@ September 26, 2026. This document describes the implemented hackathon slice and 
 
 ## 1. The 72-minute scope
 
-Build one working web dashboard and API around a bounded Tesla search in San Francisco. The buyer confirms a brief, sees hard-filter counts and Jev ranking, selects one to three cars, and prepares a negotiation handoff. Chris owns inventory consolidation; Dara owns optimization and seller workflows; Ben owns this integration. WhatsApp is team coordination, not the buyer channel.
+Build one working web dashboard and API around a bounded Tesla search in San Francisco. The buyer confirms a brief, sees hard-filter counts and Jev ranking, selects one to three cars, and prepares a negotiation handoff. Chris owns inventory consolidation and the Photon/Eve agent on Vercel; Dara owns optimization and seller workflows; Ben owns the Railway dashboard and API integration. WhatsApp is team coordination, not the buyer channel.
 
 Implemented locally:
 
@@ -26,7 +26,8 @@ flowchart TD
     Buyer[Buyer] --> Web[Next.js dashboard]
     Client[Trusted client agent] --> API[Authenticated API]
     Web --> API
-    Photon[Photon iMessage: pending] -.-> API
+    Photon[Photon iMessage] -.-> Eve[Chris: Eve agent on Vercel]
+    Eve -. bearer API .-> API
     API --> Brief[Extract and confirm structured brief]
     Fixture[1,000 synthetic Teslas] --> Catalog[Catalog normalizer]
     Chris[Chris: configured catalog API] --> Catalog
@@ -111,7 +112,7 @@ All routes below are implemented. Health is public; other business routes requir
 
 `SearchResult` contains `session_id`, `result_token`, `brief`, `results`, `counts`, `ranking`, `catalog`, and `created_at`. Count fields are `total`, `eligible`, `candidates`, `scored`, and `shown`.
 
-Search tokens are encrypted/authenticated with AES-GCM, bound to the current session, and expire after one hour. The dashboard caches its latest search in browser session storage for that period. Session cookies last one day; job tokens last one day. This is not a database or durable event log. Selected IDs, current plan, and final choice are UI state; exporting the handoff preserves a JSON snapshot.
+Search tokens are encrypted/authenticated with AES-GCM, bound to the current request owner, and expire after one hour. Browser cookies create separate session owners, while the shared integration key maps to `integration-client`. Eve must isolate tokens and result order per conversation; backend per-iMessage-buyer identity is not implemented. The dashboard caches its latest search in browser session storage for one hour. Session cookies and job tokens last one day. This is not a database or durable event log. Selected IDs, current plan, and final choice are UI state; exporting the handoff preserves a JSON snapshot.
 
 ## 7. Dara's optimization boundary
 
@@ -149,9 +150,9 @@ A later purchase adapter would require a persisted approval tied to exact VIN, s
 
 ## 9. Photon and integration handoff
 
-Photon's team number is pending. There is no incoming webhook route or outbound iMessage sender in this implementation. The dashboard is the working buyer interface while number provisioning proceeds.
+Chris is setting up Photon and an Eve agent on Vercel. The path is buyer iMessage → Photon → Eve → the existing Railway API at `https://jevgotiator-production.up.railway.app`. Live deployment and messaging verification remain pending. This API does not need its own Eve runtime, incoming Photon route, or outbound iMessage sender.
 
-The future Photon adapter should verify provider signatures on raw bytes, deduplicate message IDs, bind sender and conversation to a buyer, persist intake before acknowledgment, and use the same search/selection contracts. A reply such as “1 and 3” must refer to a current result snapshot. Sender identity and a casual “yes” must not become purchase authority. Provider acceptance and actual message delivery need separate evidence.
+The [Eve handoff](docs/eve-integration.md) specifies the three initial tools: clarify, confirmed search, and plan selected cars. Chris configures the channel, keeps API credentials server-side, and persists each result token and numbered-list mapping inside its originating Eve conversation. A reply such as “1 and 3” must resolve only against that result. The bearer API currently shares one integration owner, so conversation isolation is required in Eve and is not claimed as backend per-buyer authentication. No contact or purchase tool belongs in the initial messaging handoff. Provider acceptance and actual message delivery need separate evidence.
 
 Chris should provide the export URL, authentication convention, one sanitized response, and pagination behavior. Dara should provide the POST/status endpoints, response example, idempotency behavior, and approved test contact. Team acceptance and live integration tests are still required.
 
