@@ -1,6 +1,6 @@
 # Integration research
 
-Checked September 26, 2026. This is documentation evidence, not proof that JEVcar's integrations are configured.
+Checked September 26, 2026. This is documentation evidence, not proof that JEVgotiator's integrations are configured.
 
 | Provider | Verified documentation | Design implication |
 | --- | --- | --- |
