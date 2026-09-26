@@ -4,9 +4,9 @@ Status: Vercel, Railway, and Eve are deployed; the core intelligence flow was ve
 
 ## Before presenting
 
-Open [the Activity dashboard](https://jevgotiator.vercel.app/dashboard?view=activity) and sign in. Text the recipient line assigned to your Photon-registered sender; assignments can differ per user. Keep personal numbers, access codes, and credentials off the shared screen and out of the repo. Choose the presenter under **Person**, then **Follow latest** for that person. Confirm the feed identifies the conversation as **Photon iMessage**, not an HTTP operator test. Recent messages and observed workflow stages are the main presentation view; expand full history only when needed.
+Open [the Activity dashboard](https://jevgotiator.vercel.app/dashboard?view=activity) and sign in. Hand Chris's registered phone to the judge. The dashboard follows the newest fresh Chris iMessage session and hides the team's earlier sessions. Keep personal numbers, access codes, and credentials off the shared screen and out of the repo. Confirm the feed identifies the conversation as **Photon iMessage**, not an HTTP operator test. Recent messages and observed workflow stages are the main presentation view; expand full history only when needed.
 
-Send `/reset` before rehearsing. Prior history stays available; your next text starts a fresh conversation. Use a new plan to show Dara intelligence because old plans are not rewritten. For a dashboard-only restart, **New web search** clears local web results and returns to Search without resetting iMessage history. Eve’s plan reply includes a draft message and dashboard link; it does not send the draft to a seller.
+On Chris's phone, send `/reset` before the judge's request. Prior history stays saved, but only new Chris sessions appear in the demo view. Wait for Eve's reset acknowledgment, then let the judge text their request. Use a new plan to show Dara intelligence because old plans are not rewritten. **New web search** clears browser search state only. Eve’s plan reply includes a draft message and dashboard link; it does not send the draft to a seller.
 
 ## Presentation
 
