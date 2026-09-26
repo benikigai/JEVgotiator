@@ -1,12 +1,4 @@
-/* Projector-first type scale and contrast. Loaded last so it wins the cascade. */
-:root {
-  --ink: #111114;
-  --muted: #3f3f46;
-  --muted-dark-bg: #c9c9d1;
-  --text: 18px;
-  --text-small: 15px;
-  --text-caption: 14px;
-}
+/* Projector-first type scale and contrast. Loaded last so it wins the cascade. Tokens live in theme.css. */
 
 html { font-size: var(--text); }
 body { font-size: var(--text); line-height: 1.5; font-weight: 500; color: var(--ink); letter-spacing: 0; }
@@ -188,3 +180,46 @@ small, time, code { font-size: var(--text-small); }
 .activity-workspace .section-line h2 { font-size: 22px; }
 .activity-header-actions .secondary { min-height: 42px; padding: 8px 14px; }
 .activity-context-line, .activity-stage p, .activity-stage-status, .activity-workspace .activity-car small, .activity-dara-scores small { color: var(--muted); }
+
+/* Dashboard chrome matches the landing header: light surface, hairline border, black mark with lime arrow. */
+body { background: var(--bg); }
+.sidebar { background: var(--paper); box-shadow: none; border-right: 1px solid var(--line); color: var(--ink); }
+.sidebar, .sidebar nav button, .sidebar-note strong { color: var(--ink); }
+.brand, .landing-brand { font-family: var(--font-display); font-weight: 800; font-size: 24px; }
+.brand-mark, .landing-brand-mark, .login-art .brand-mark { background: var(--ink); color: var(--accent); border-radius: 50%; }
+.brand-small, .workspace-label, .sidebar-note p, .sidebar-footer small { color: var(--muted); }
+.sidebar nav button { color: var(--ink); border-radius: var(--radius-pill); padding: 12px 16px; }
+.sidebar nav button:hover { background: var(--surface); color: var(--ink); }
+.sidebar nav button.active { background: var(--ink); color: #fff; }
+.nav-count { background: var(--accent); color: var(--ink); }
+.sidebar-note { border-top-color: var(--line); }
+.sidebar-note .mini-icon { background: var(--ink); color: var(--accent); }
+.sidebar-footer { border-top-color: var(--line); }
+.avatar, .top-avatar, .landing-avatar { background: var(--ink); color: #fff; }
+.online-dot { background: var(--accent); box-shadow: 0 0 0 3px var(--paper); border: 1px solid var(--ink); }
+.topbar { background: var(--paper); backdrop-filter: none; border-bottom: 1px solid var(--line); height: 88px; }
+.location-pill, .landing-github { border: 1px solid var(--line-strong); border-radius: var(--radius-pill); color: var(--ink); }
+.login-page { background: var(--bg); }
+.login-art { background: var(--ink); }
+.login-art::after { display: none; }
+.login-art h1 em { color: var(--accent); }
+
+/* Shared surfaces and controls. */
+.search-box, .brief-panel, .car-card, .deal-plan, .deal-timeline, .connection-card, .trace-stages section, .trace-section, .activity-messages, .activity-tools,
+.activity-results, .intelligence-panel, .negotiation-row, .landing-stack-card, .landing-flow li, .empty-state, .detail-modal { border-radius: var(--radius-card); border: 1px solid var(--line); box-shadow: var(--shadow-card); background: var(--paper); }
+.car-card:hover, .connection-card:hover, .landing-stack-card:hover { box-shadow: var(--shadow-raised); }
+.car-card.selected { border: 2px solid var(--ink); }
+.trace-invitation, .deal-banner, .next-step, .integration-note, .brief-panel, .landing-architecture { background: var(--surface); }
+.brief-panel { box-shadow: none; }
+input, select, textarea { border-radius: var(--radius-control); border-color: var(--line-strong); }
+input:focus, select:focus { border-color: var(--ink); box-shadow: 0 0 0 4px rgba(17, 17, 20, 0.12); }
+.primary, .secondary, .subtle-button, .landing-button, .select-button, .prompt-chips button { border-radius: var(--radius-pill); }
+.primary, .landing-button-dark { background: var(--ink); color: #fff; }
+.primary:hover, .landing-button-dark:hover { background: var(--ink-soft); }
+.subtle-button, .landing-button-lime, .select-button.chosen { background: var(--accent); color: var(--ink); }
+.select-button.chosen:hover, .subtle-button:hover, .landing-button-lime:hover { background: var(--accent-hover); }
+.secondary { border: 1px solid var(--line-strong); color: var(--ink); background: var(--paper); }
+.secondary:hover { background: var(--surface); }
+.data-badge { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.flow, .trace-stages .trace-stage-jev, .landing-flow .landing-flow-jev, .landing-proof, .landing-bottom-cta, .scope-tag, .pipeline { background: var(--ink); color: #fff; border-radius: var(--radius-card); }
+.tiny-line, .landing-eyebrow > span { background: var(--signal); }
