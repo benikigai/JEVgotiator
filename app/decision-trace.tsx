@@ -6,7 +6,7 @@ import type { SearchResult } from "@/lib/contracts";
 
 const percent = (value: number) => `${(value * 100).toFixed(1)}%`;
 
-export default function DecisionTrace({ result, onBack }: { result: SearchResult | null; onBack: () => void }) {
+export default function DecisionTrace({ result, onBack }: { result: Omit<SearchResult, "result_token"> | null; onBack: () => void }) {
   const [activeId, setActiveId] = useState("");
   const trace = result?.ranking.trace;
   if (!result || !trace) return <div className="empty-state"><Zap size={32}/><h2>See exactly where Jev contributes.</h2><p>Run a search to record its questions, input evidence, returned scores, and the arithmetic behind the shortlist.</p><button className="primary" onClick={onBack}>Run a search</button></div>;
