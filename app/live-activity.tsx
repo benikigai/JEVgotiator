@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUpRight, CheckCircle2, Clock3, LoaderCircle, MessageSquare, Radio, RefreshCw, Zap } from "lucide-react";
-import { activityParticipants, conversationsForParticipant, type ActivityResponse, type ParticipantFilter } from "@/lib/activity-contract";
+import type { ActivityResponse } from "@/lib/activity-contract";
 import DecisionTrace from "./decision-trace";
 import DealIntelligence from "./deal-intelligence";
 import "./live-activity.css";
@@ -12,11 +12,11 @@ const time = (value: string | null | undefined) => value ? new Date(value).toLoc
 const toolLabel = (name: string) => ({ clarify_car_request: "Clarify buyer brief", search_teslas: "Filter inventory and ask Jev", prepare_deal_plan: "Prepare selected-car plan" }[name] || name.replaceAll("_", " "));
 type Tool = ActivityResponse["tools"][number];
 const stageState = (tool: Tool | undefined, complete: boolean) => tool?.status === "running" ? "running" : tool?.status === "failed" ? "failed" : complete ? "complete" : "waiting";
+const DEMO_START_AT = Date.parse("2026-09-26T21:54:13Z");
 
 export default function LiveActivity() {
   const [data, setData] = useState<ActivityResponse | null>(null);
   const [conversation, setConversation] = useState("");
-  const [participant, setParticipant] = useState<ParticipantFilter>("");
   const [error, setError] = useState("");
   const [refresh, setRefresh] = useState(0);
   const [showTrace, setShowTrace] = useState(false);
@@ -24,8 +24,8 @@ export default function LiveActivity() {
   const [readingHistory, setReadingHistory] = useState(false);
   const messagesRef = useRef<HTMLDivElement>(null);
   const followLatest = useRef(true);
-  const conversations = conversationsForParticipant(data?.conversations ?? [], participant);
-  const requestedConversation = conversation || (participant ? conversations[0]?.id : "") || "";
+  const conversations = (data?.conversations ?? []).filter(item => item.participant_label === "Chris" && item.channel === "photon" && Date.parse(item.created_at) >= DEMO_START_AT);
+  const requestedConversation = conversation || conversations[0]?.id || "";
 
   useEffect(() => {
     let stopped = false;
@@ -85,12 +85,12 @@ export default function LiveActivity() {
     { name: "Dara plan", state: optimization && !optimization.intelligence && planTool?.status !== "running" && planTool?.status !== "failed" ? "draft" : stageState(planTool, Boolean(optimization?.intelligence)), detail: planTool?.status === "running" ? "Preparing selected cars" : optimization?.intelligence ? `${optimization.intelligence.candidates.length} selected cars evaluated` : optimization ? "Draft ready; new Dara plan needed" : "Choose 1–3 after search" },
   ];
   const channel = selected?.channel === "photon" ? "Photon iMessage" : selected?.channel === "http" ? "HTTP operator test" : "Channel unconfirmed";
-  if (showTrace && search) return <DecisionTrace result={search} onBack={() => setShowTrace(false)}/>;
+  if (showTrace && search) return <DecisionTrace result={search} onBack={() => setShowTrace(false)} source={selected ? { label: `${selected.participant_label ?? "Unidentified"} · ${channel}`, sessionId: selected.id } : undefined}/>;
 
   return <div className="activity-workspace">
     <header className="activity-work-header"><div><span className="eyebrow">OBSERVED CONVERSATION ACTIVITY</span><h1>Live workbench</h1></div><div className="activity-header-actions"><span className={`activity-status ${data?.status === "live" && !error ? "connected" : ""}`}><Radio size={12}/>{error ? "Interrupted" : data?.status === "live" ? "Live · 3s refresh" : data?.status === "unconfigured" ? "Not configured" : data?.status === "unavailable" ? "Eve unavailable" : "Connecting…"}</span><button className="secondary" onClick={() => setRefresh(value => value + 1)} aria-label="Refresh activity"><RefreshCw size={14}/><span>Refresh</span></button></div></header>
-    <div className="activity-toolbar"><label className="activity-person-control">Person<select value={participant} onChange={event => { setParticipant(event.target.value as ParticipantFilter); setConversation(""); setShowTrace(false); }}><option value="">All people</option>{activityParticipants.map(name => <option key={name} value={name}>{name}</option>)}<option value="unknown">Unidentified</option></select></label><label className="activity-session-control">Conversation<select value={conversation} onChange={event => { setConversation(event.target.value); setShowTrace(false); }}><option value="">Follow latest{participant && participant !== "unknown" ? ` for ${participant}` : participant ? " unidentified" : " conversation"}</option>{conversations.map(item => <option key={item.id} value={item.id}>{item.participant_label ?? "Unidentified"} · {item.title} · {item.channel}</option>)}</select></label></div>
-    <div className="activity-context-line"><span>{selected ? `${selected.participant_label ?? "Unidentified"} · ${channel} · ${selected.status}` : "Choose a person or send your first text"}{data?.fetched_at && ` · ${time(data.fetched_at)}`}</span><details><summary>Messaging & reset</summary><p>Text your assigned Eve number. Send /reset for a fresh conversation; earlier history stays available. This is a shared team view, not private accounts. Unmatched participants stay unidentified.</p></details></div>
+    <div className="activity-toolbar"><strong>Chris’s demo phone</strong><label className="activity-session-control">Conversation<select value={conversation} onChange={event => { setConversation(event.target.value); setShowTrace(false); }}><option value="">Follow latest Chris iMessage</option>{conversations.map(item => <option key={item.id} value={item.id}>{item.title} · {item.id.slice(-8)}</option>)}</select></label></div>
+    <div className="activity-context-line"><span>{selected ? `Chris · ${channel} · session ${selected.id.slice(-8)} · ${selected.status}` : "Waiting for a fresh text from Chris’s phone"}{data?.fetched_at && ` · ${time(data.fetched_at)}`}</span><details><summary>Messaging & reset</summary><p>On Chris’s registered phone, text /reset to Eve, then send a Tesla request. This view shows new Chris iMessage sessions only. Earlier records remain saved outside the demo view.</p></details></div>
     {error && <div className="notice" role="alert">{error} {data && "Last received activity shown."}</div>}
     {data?.warning && <div className="notice">{data.warning}</div>}
 
@@ -99,7 +99,7 @@ export default function LiveActivity() {
 
     <div className="activity-grid"><section className="activity-messages"><div className="section-line"><h2><MessageSquare size={16}/>{selected?.participant_label ? `${selected.participant_label} + Eve` : "Conversation"}</h2><span className="quiet">{messages.length ? `${shownMessages.length} of ${messages.length} messages` : "Waiting for a message"}</span></div>
       {!!messages.length && <div className="activity-history-controls"><button className="text-button" onClick={() => { if (showHistory) jumpToLatest(); else { setShowHistory(true); followLatest.current = false; setReadingHistory(true); requestAnimationFrame(() => { if (messagesRef.current) messagesRef.current.scrollTop = 0; }); } }}>{showHistory ? "Show recent 6" : "Show full history"}</button>{(readingHistory || showHistory) && <button className="text-button" onClick={jumpToLatest}>Latest message <ArrowDown size={12}/></button>}</div>}
-      {!messages.length ? <div className="activity-empty"><MessageSquare size={25}/><h3>{participant ? "No conversation loaded for this person." : "Start with your Tesla brief."}</h3><p>“Model Y under $35,000 in San Francisco, under 60,000 miles.”</p></div> : <div className="message-list" ref={messagesRef} onScroll={() => { const node = messagesRef.current; if (!node) return; const atBottom = node.scrollHeight - node.scrollTop - node.clientHeight < 50; followLatest.current = atBottom && !showHistory; setReadingHistory(!atBottom); }}>{shownMessages.map(message => <article className={`message-bubble ${message.role}`} key={message.id}><div><strong>{message.role === "user" ? selected?.participant_label ?? "Buyer" : "Eve"}</strong><time>{time(message.created_at)}</time></div>{message.text.length > 600 ? <><p>{message.text.slice(0, 600)}…</p><details><summary>Read full message</summary><p>{message.text}</p></details></> : <p>{message.text}</p>}</article>)}</div>}
+      {!messages.length ? <div className="activity-empty"><MessageSquare size={25}/><h3>Waiting for Chris’s demo text.</h3><p>Text /reset, then “Model Y under $35,000 in San Francisco, under 60,000 miles.”</p></div> : <div className="message-list" ref={messagesRef} onScroll={() => { const node = messagesRef.current; if (!node) return; const atBottom = node.scrollHeight - node.scrollTop - node.clientHeight < 50; followLatest.current = atBottom && !showHistory; setReadingHistory(!atBottom); }}>{shownMessages.map(message => <article className={`message-bubble ${message.role}`} key={message.id}><div><strong>{message.role === "user" ? selected?.participant_label ?? "Buyer" : "Eve"}</strong><time>{time(message.created_at)}</time></div>{message.text.length > 600 ? <><p>{message.text.slice(0, 600)}…</p><details><summary>Read full message</summary><p>{message.text}</p></details></> : <p>{message.text}</p>}</article>)}</div>}
       <p className="tiny-note">Recorded replies prove generation. A reply on your phone proves delivery.</p>
     </section>
 

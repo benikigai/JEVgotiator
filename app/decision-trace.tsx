@@ -6,7 +6,7 @@ import type { SearchResult } from "@/lib/contracts";
 
 const percent = (value: number) => `${(value * 100).toFixed(1)}%`;
 
-export default function DecisionTrace({ result, onBack }: { result: Omit<SearchResult, "result_token"> | null; onBack: () => void }) {
+export default function DecisionTrace({ result, onBack, source }: { result: Omit<SearchResult, "result_token"> | null; onBack: () => void; source?: { label: string; sessionId: string } }) {
   const [activeId, setActiveId] = useState("");
   const trace = result?.ranking.trace;
   if (!result || !trace) return <div className="empty-state"><Zap size={32}/><h2>See exactly where Jev contributes.</h2><p>Run a search to record its questions, input evidence, returned scores, and the arithmetic behind the shortlist.</p><button className="primary" onClick={onBack}>Run a search</button></div>;
@@ -20,7 +20,7 @@ export default function DecisionTrace({ result, onBack }: { result: Omit<SearchR
     const link = document.createElement("a"); link.href = url; link.download = "jevgotiator-decision-trace.json"; link.click(); URL.revokeObjectURL(url);
   }
   return <>
-    <section className="page-heading compact"><div><span className="eyebrow">THE DECISION RECORD</span><h1>Here’s what Jev did.</h1><p>Recorded inputs, returned scores, and the calculation behind this search.</p></div><button className="secondary" onClick={onBack}><ArrowLeft size={16}/>Results</button></section>
+    <section className="page-heading compact"><div><span className="eyebrow">THE DECISION RECORD</span><h1>Here’s what Jev did.</h1><p>Recorded inputs, returned scores, and the calculation behind this search.</p>{source && <p className="trace-source">From {source.label} · session {source.sessionId.slice(-8)}</p>}</div><button className="secondary" onClick={onBack}><ArrowLeft size={16}/>{source ? "Back to conversation" : "Results"}</button></section>
     <div className="trace-stages">
       <section><Database size={20}/><span className="eyebrow">01 · OUR CODE</span><h2>{result.counts.total.toLocaleString()} → {result.counts.eligible}</h2><strong>Apply hard constraints</strong><p>Location, availability, budget, model, year, mileage, and required history.</p></section>
       <section className="trace-stage-jev"><Zap size={20}/><span className="eyebrow">02 · JEV</span><h2>{trace.answers.filter(answer => answer.used).length} scores</h2><strong>Evaluate supplied evidence</strong><p>{result.counts.candidates} candidates. Buyer fit and maintenance questions answered with typed 0–1 scores.</p></section>

@@ -13,6 +13,7 @@ export type ActivityResponse = {
     title: string;
     channel: "photon" | "http" | "unknown";
     status: string;
+    created_at: string;
     updated_at: string;
     participant_label?: ActivityParticipant;
   }[];
