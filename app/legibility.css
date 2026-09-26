@@ -245,3 +245,6 @@ input:focus, select:focus { border-color: var(--ink); box-shadow: 0 0 0 4px rgba
   .landing-hero-break { display: inline; }
   .landing-hero-art { margin-top: 28px; }
 }
+.brand { align-items: center; gap: 12px; }
+.brand > span:last-child { line-height: 1; }
+.brand-dot { color: var(--signal); }
