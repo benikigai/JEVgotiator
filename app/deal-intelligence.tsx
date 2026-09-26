@@ -25,28 +25,29 @@ function BuyerLens({ intelligence, title, weights, setWeights }: { intelligence:
   const change = (key: keyof MatchWeights, value: number) => setWeights(current => ({ ...current, [key]: value }));
   const controls: { key: keyof MatchWeights; label: string; hint: string }[] = [
     { key: "value", label: "Value", hint: "Price against the agreed budget" },
-    { key: "evidence", label: "Looks near-new", hint: "Photo coverage + records; not a condition guarantee" },
+    { key: "evidence", label: "Well-kept evidence", hint: "Photo coverage + records; not a condition guarantee" },
     { key: "road_trip", label: "Road-trip ready", hint: "Model heuristic for longer drives" },
-    { key: "model_fit", label: "Lifestyle fit", hint: "Synthetic profile only" },
+    { key: "model_fit", label: "Personal lens", hint: "Dara’s approved profile context" },
   ];
 
   return <section className="buyer-lens" aria-labelledby="buyer-lens-title">
     <div className="buyer-lens-top">
       <div>
-        <span className="eyebrow">AUTOMUSE × JEVGOTIATOR</span>
-        <h2 id="buyer-lens-title"><Sparkles size={20}/>Carry your lens into the deal.</h2>
-        <p>Use a synthetic buyer profile to tune how your selected cars compare. The lens never overrides price, title, battery evidence, or the buyer’s stated limits.</p>
+        <span className="eyebrow">DARA’S PROFILE × JEVGOTIATOR</span>
+        <h2 id="buyer-lens-title"><Sparkles size={20}/>Carry Dara’s lens into the deal.</h2>
+        <p>Built from Dara’s user-approved public profile. It gives priority to polished presentation and practical mobility, while vehicle evidence and stated limits remain in control.</p>
       </div>
       <button className="lens-reset" type="button" onClick={() => setWeights(defaultMatchWeights)}><RotateCcw size={14}/>Reset lens</button>
     </div>
 
     <div className="buyer-lens-grid">
       <article className="buyer-profile-card">
-        <div className="profile-card-heading"><span className="lens-avatar">M</span><div><span className="eyebrow">SYNTHETIC PROFILE</span><h3>Maya Rivera</h3></div></div>
-        <p className="profile-role">Bay Area designer · profile generated for this demo</p>
-        <blockquote>“Weekday errands should be easy. Weekends should fit a dog, trail gear, and a long drive.”</blockquote>
-        <div className="profile-tags"><span>city commute</span><span>road trips</span><span>trail gear</span><span>dog-friendly</span><span>black + minimal</span></div>
-        <div className="profile-boundary"><UserRound size={16}/><p><strong>How it is used</strong>Low-stakes lifestyle context only. It informs the Lifestyle fit control and cannot create evidence about a car.</p></div>
+        <div className="profile-card-heading"><img className="lens-avatar-image" src="/dara-profile.jpg" alt="Dara’s profile picture"/><div><span className="eyebrow">USER-APPROVED PROFILE</span><h3>Dara</h3></div></div>
+        <p className="profile-role">Founder / CEO, Aora · San Francisco</p>
+        <blockquote>“A composed workday car with real-world range, a clean presence, and no guesswork.”</blockquote>
+        <div className="profile-tags"><span>founder work</span><span>polished + minimal</span><span>city mobility</span><span>weekend escape</span></div>
+        <div className="profile-source-priorities"><strong>Source priority</strong><span>Profile + pinned media</span><span>Highlights</span><span>Professional/editorial posts</span><small>Candid and reposted media carry the least weight.</small></div>
+        <div className="profile-boundary"><UserRound size={16}/><p><strong>How it is used</strong>Optional preference context only. It informs the Personal lens control and cannot create evidence about a car or its condition.</p></div>
       </article>
 
       <article className="lens-controls">
@@ -58,7 +59,7 @@ function BuyerLens({ intelligence, title, weights, setWeights }: { intelligence:
             <input aria-label={`${control.label} importance`} type="range" min="0" max="60" value={weights[control.key]} onChange={event => change(control.key, Number(event.target.value))}/>
           </label>)}
         </div>
-        <div className="lens-evidence-note"><Image size={15}/><span>“Looks near-new” combines listing photo coverage and records. It cannot confirm hidden damage, tire condition, or battery health.</span></div>
+        <div className="lens-evidence-note"><Image size={15}/><span>“Well-kept evidence” combines listing photo coverage and records. It cannot confirm hidden damage, tire condition, or battery health.</span></div>
       </article>
     </div>
 
@@ -67,7 +68,7 @@ function BuyerLens({ intelligence, title, weights, setWeights }: { intelligence:
       {candidates.map((candidate, index) => <article className="lens-result" key={candidate.listing_id}>
         <div className="lens-result-top"><span className="number-chip">{String(index + 1).padStart(2, "0")}</span><span className="lens-original">Jev shortlist #{candidate.rank}</span><strong>{candidate.lensScore}<small>/ 100</small></strong></div>
         <h4>{title(candidate.listing_id)}</h4>
-        <div className="lens-mini-signals"><span>Value <i style={{ width: `${candidate.signals.value}%` }}/></span><span>Evidence <i style={{ width: `${candidate.signals.evidence}%` }}/></span><span>Profile <i style={{ width: `${candidate.signals.model_fit}%` }}/></span></div>
+        <div className="lens-mini-signals"><span>Value <i style={{ width: `${candidate.signals.value}%` }}/></span><span>Evidence <i style={{ width: `${candidate.signals.evidence}%` }}/></span><span>Lens <i style={{ width: `${candidate.signals.model_fit}%` }}/></span></div>
         <p>{index === 0 ? "Best fit for these priorities." : "Compare before you make a final choice."}</p>
       </article>)}
     </div>
