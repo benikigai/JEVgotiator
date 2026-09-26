@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "listing_id": "listing_demo_001",
+  "listing_version": 1,
+  "vehicle_id": null,
+  "vin": null,
+  "make": "Toyota",
+  "model": "Corolla",
+  "year": 2020,
+  "trim": "LE",
+  "body_type": "sedan",
+  "fuel_type": "gasoline",
+  "mileage_miles": 42000,
+  "photos": [],
+  "price": {
+    "currency": "USD",
+    "advertised_price_cents": 1790000,
+    "confirmed_out_the_door_cents": null,
+    "quote_evidence_id": null,
+    "financing_condition": null
+  },
+  "location": {
+    "city": "San Francisco",
+    "region": "CA",
+    "country": "US",
+    "latitude": null,
+    "longitude": null,
+    "evidence_id": "evidence_demo_001"
+  },
+  "seller": {
+    "seller_id": "seller_demo_001",
+    "type": "private",
+    "display_name": "Demo seller",
+    "dealer_name": null,
+    "contact_ref": null
+  },
+  "history": {
+    "accident_status": "unknown",
+    "maintenance_status": "seller_claimed_records_available",
+    "maintenance_evidence_ids": ["evidence_demo_002"],
+    "title_status": "unknown",
+    "history_reports": []
+  },
+  "source": {
+    "provider": "synthetic_fixture",
+    "listing_id": "demo-001",
+    "url": "https://example.com/cars/demo-001",
+    "raw_text": "Demo listing: 2020 Toyota Corolla LE, 42,000 miles, $17,900. Located in San Francisco. Seller says maintenance records are available. Accident and title history not supplied.",
+    "first_observed_at": "2026-09-26T20:00:00Z",
+    "last_observed_at": "2026-09-26T20:00:00Z",
+    "published_at": null
+  },
+  "availability": {
+    "status": "active",
+    "available_from": null,
+    "last_confirmed_at": null
+  },
+  "evidence": [
+    {
+      "evidence_id": "evidence_demo_001",
+      "fields": ["make", "model", "year", "trim", "mileage_miles", "price.advertised_price_cents", "location.city"],
+      "excerpt": "2020 Toyota Corolla LE, 42,000 miles, $17,900. Located in San Francisco.",
+      "source_url": "https://example.com/cars/demo-001",
+      "observed_at": "2026-09-26T20:00:00Z",
+      "kind": "listing_text"
+    },
+    {
+      "evidence_id": "evidence_demo_002",
+      "fields": ["history.maintenance_status"],
+      "excerpt": "Seller says maintenance records are available.",
+      "source_url": "https://example.com/cars/demo-001",
+      "observed_at": "2026-09-26T20:00:00Z",
+      "kind": "seller_claim"
+    }
+  ],
+  "mode": "synthetic"
+}
