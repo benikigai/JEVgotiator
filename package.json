@@ -1,0 +1,9 @@
+{
+  "name": "jevgotiator",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {"dev": "node scripts/dev.mjs", "build": "next build", "start": "next start --hostname 0.0.0.0", "typecheck": "tsc --noEmit", "test": "tsx --test tests/*.test.ts", "seed:catalog": "node scripts/generate-catalog.mjs"},
+  "engines": {"node": ">=22 <25"},
+  "dependencies": {"next": "16.3.6", "react": "^19.2.0", "react-dom": "^19.2.0", "zod": "4.6.5", "lucide-react": "1.48.0"},
+  "devDependencies": {"typescript": "^5.9.0", "@types/node": "^22.0.0", "@types/react": "^19.0.0", "@types/react-dom": "^19.0.0", "tsx": "^4.20.0"}
+}
