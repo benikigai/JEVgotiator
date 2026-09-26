@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AutoMuse — Tesla finder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="AutoMuse home">
+          <span class="brand-mark">A</span>
+          <span>automuse<span class="muted">/finder</span></span>
+        </a>
+        <div class="header-status"><span class="live-dot"></span> SYNTHETIC DEMO</div>
+      </header>
+
+      <section class="hero" id="top">
+        <div>
+          <p class="eyebrow">PERSONAL CAR BUYER / 01</p>
+          <h1>A car finder with<br /><span>taste</span> and receipts.</h1>
+          <p class="hero-copy">Five Tesla recommendations ranked by real buyer constraints, visible-condition evidence, and a clearly synthetic lifestyle profile.</p>
+        </div>
+        <div class="hero-stat-grid" aria-label="Search summary">
+          <div><strong id="resultCount">05</strong><span>matches shown</span></div>
+          <div><strong>08</strong><span>signals scored</span></div>
+          <div><strong>JEV</strong><span>decision layer</span></div>
+        </div>
+      </section>
+
+      <section class="profile-section panel">
+        <div class="section-heading">
+          <div><p class="eyebrow">A / BUYER PROFILE</p><h2>Meet Maya. Not a real person.</h2></div>
+          <span class="badge synthetic">SYNTHETIC PROFILE</span>
+        </div>
+        <div class="profile-grid">
+          <div class="identity-card">
+            <div class="avatar"><span>M</span><i></i></div>
+            <div><h3>Maya Rivera</h3><p>Designer · Bay Area · profile generated for this demo</p></div>
+          </div>
+          <div class="profile-story">
+            <blockquote>“Weekday errands should be easy. Weekends should fit a dog, trail gear, and a long drive.”</blockquote>
+            <div class="tag-row" id="profileTags"></div>
+          </div>
+          <div class="profile-rule">
+            <span class="rule-icon">✦</span>
+            <p><strong>How it is used</strong>Low-stakes lifestyle signals only. It cannot override price, safety, history, battery, or explicit buyer constraints.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="workbench" aria-label="Adjust recommendation priorities">
+        <div class="section-heading controls-heading">
+          <div><p class="eyebrow">C / TUNE THE MATCH</p><h2>What matters more?</h2></div>
+          <button class="refresh-button" id="refreshButton"><span>↻</span> Refresh matches</button>
+        </div>
+        <div class="control-grid">
+          <label class="select-control">Tesla model
+            <select id="modelFilter">
+              <option value="any">Any Tesla</option>
+              <option value="Model 3">Model 3</option>
+              <option value="Model Y">Model Y</option>
+            </select>
+          </label>
+          <label class="range-control">Maximum price <output id="budgetOutput">$36,000</output>
+            <input id="budget" type="range" min="24000" max="60000" step="1000" value="36000" />
+            <span><small>$24k</small><small>$60k</small></span>
+          </label>
+          <label class="range-control">Maximum mileage <output id="mileageOutput">75,000 mi</output>
+            <input id="maxMileage" type="range" min="20000" max="100000" step="5000" value="75000" />
+            <span><small>20k</small><small>100k</small></span>
+          </label>
+          <label class="switch-control"><input id="blackOnly" type="checkbox" checked /><span class="switch"></span> Black exterior only</label>
+        </div>
+        <div class="priority-grid">
+          <label>Value <output id="valueWeightOutput">26%</output><input id="valueWeight" type="range" min="0" max="50" value="26" /></label>
+          <label>Looks near-new <output id="qualityWeightOutput">23%</output><input id="qualityWeight" type="range" min="0" max="50" value="23" /></label>
+          <label>Road-trip ready <output id="roadWeightOutput">18%</output><input id="roadWeight" type="range" min="0" max="50" value="18" /></label>
+          <label>Social-profile fit <output id="socialWeightOutput">8%</output><input id="socialWeight" type="range" min="0" max="30" value="8" /></label>
+        </div>
+        <p class="control-note" id="weightNote">Other quality signals — documented history, battery evidence, and model year — account for the remaining 25%.</p>
+      </section>
+
+      <section class="recommendations">
+        <div class="section-heading">
+          <div><p class="eyebrow">B / TOP FIVE</p><h2>Best matches right now.</h2></div>
+          <p class="re-rank-status" id="reRankStatus">Ranked from simulated inventory</p>
+        </div>
+        <div class="insight-card" id="insightCard"></div>
+        <div class="listing-grid" id="listingGrid"></div>
+      </section>
+
+      <section class="method panel">
+        <div><p class="eyebrow">WHY THE SCORES ARE TRUSTWORTHY</p><h2>Evidence has limits.</h2></div>
+        <div class="method-grid">
+          <article><span class="method-index">01</span><h3>Photos</h3><p>Visible wear, tire condition, panel alignment, and interior condition. Photos do not prove battery health or hidden damage.</p></article>
+          <article><span class="method-index">02</span><h3>Records</h3><p>VIN-specific history and service records can strengthen a match. Generic model reviews cannot.</p></article>
+          <article><span class="method-index">03</span><h3>JEV</h3><p>Classifies photo and record evidence into typed condition signals before the ranking code acts on them.</p></article>
+        </div>
+      </section>
+
+      <footer>AutoMuse demo · All profile data, listings, prices, images, inspections, and reviews on this page are synthetic. Connect MarketCheck and a photo-inspection provider for live inventory.</footer>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>
