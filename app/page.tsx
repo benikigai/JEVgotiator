@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Braces, Check, Database, GitBranch, Layers3, MessageCircle, Search, ShieldCheck, SlidersHorizontal, Sparkles, Workflow, Zap } from "lucide-react";
 import "./landing.css";
+import "./landing-polish.css";
 
 const demoHref = "/dashboard?view=activity";
 const githubHref = "https://github.com/benikigai/JEVgotiator";
