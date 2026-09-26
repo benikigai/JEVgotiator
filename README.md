@@ -8,10 +8,10 @@ Scope for the demo: used Tesla (Model 3 / Y / S / X / Cybertruck), sellers locat
 
 | Owner | Area | Deliverable |
 | --- | --- | --- |
-| Ben | Integration, plan, entry points | README/spec, FastAPI service, clarify + Jev rerank, Photon/iMessage webhook, Railway deploy, scraper, demo |
+| Ben | Integration, plan, entry points | README/spec, Photon/iMessage conversational agent design, Railway deploy, demo |
 | Dara | Intelligence / negotiation layer | `POST /v1/negotiate`, outreach drafting, seller contact, price negotiation, follow-up jobs |
-| Chris | Master car database | Postgres schema, `GET /v1/listings`, `POST /v1/listings/ingest`, loader, source normalization |
-| Codex | Contributor | Contract fixtures and build spec (`codex/*` branches) |
+| Chris | Master car database | Postgres schema, `GET /v1/listings`, `POST /v1/listings/ingest`, source normalization |
+| Codex | Code | API implementation, clarify + Jev rerank, scraper (`scraper/`), fixtures (`codex/*` branches) |
 
 ## Architecture
 
@@ -29,7 +29,7 @@ flowchart TD
 
     FB[FB Marketplace: Browserbase + Stagehand] --> Scraper[scraper/ → data/listings.json]
     CL[Craigslist SF: fallback adapter] --> Scraper
-    Scraper --> Load[db/load_listings.py or /v1/listings/ingest]
+    Scraper --> Load[POST /v1/listings/ingest]
     Seed[Synthetic fallback] -.-> Load
     Load --> PG[(Postgres: listings, sessions, negotiation)]
     PG --> Filter
@@ -183,7 +183,27 @@ Response: `{ "ok": true, "session_id": "ses_01J...", "action": "search" }`
 
 ## Data sources: real scraped listings
 
-[`scraper/`](scraper/README.md) is a standalone TypeScript tool (Browserbase + Stagehand) that searches Facebook Marketplace for Tesla within ~8 mi of SF, visits each listing, extracts the schema above (including Tesla fields), filters to SF-proper zips, and writes `data/listings.json`. A Craigslist SF adapter (`sfbay.craigslist.org/search/sfc/cta?query=tesla`) is the fallback if FB blocks. `db/load_listings.py` upserts the JSON into Postgres. Runs are capped (~20 listings), read-only, logged-out; see the rate/ethics note in the scraper README. `data/listings.sample.json` is committed when a live run has been done.
+[`scraper/`](scraper/README.md) (plan; Codex owns implementation) is a standalone TypeScript tool (Browserbase + Stagehand) that searches Facebook Marketplace for Tesla within ~8 mi of SF, visits each listing, extracts the schema above (including Tesla fields), filters to SF-proper zips, and writes `data/listings.json`. A Craigslist SF adapter (`sfbay.craigslist.org/search/sfc/cta?query=tesla`) is the fallback if FB blocks. The JSON is loaded via `POST /v1/listings/ingest`. Runs are capped (~20 listings), read-only, logged-out; see the rate/ethics note in the scraper README.
+
+## Conversational agent (Photon / iMessage)
+
+```mermaid
+stateDiagram-v2
+    [*] --> intake: inbound iMessage
+    intake --> clarify: LLM drafts brief, asks ≤1 question
+    clarify --> search: brief confirmed
+    search --> present: SQL filter + Jev rerank
+    present --> select: top 5 sent with numbers
+    select --> negotiate: user replies "1 and 3"
+    negotiate --> follow_up: agreed price / seller reply
+    follow_up --> [*]
+```
+
+- **Number**: a Photon-provisioned iMessage number. Photon delivers inbound messages to `POST /webhooks/photon` (`{from, text, message_id}`), verified with `PHOTON_WEBHOOK_SECRET`.
+- **Session state machine keyed by phone**: `sessions.user_handle = from`. The webhook loads the open session for that phone (or creates one) and dispatches on `sessions.state`: `new → intake`, `clarified → search`, `ranked → select` (parse "1 and 3" against `result_ids`), `selected → negotiate`, `negotiating → follow_up`. Every step persists state before replying, so a dropped message is safe to retry.
+- **Replies**: the API responds `200` immediately and sends the user-facing text via Photon's send API (`PHOTON_API_KEY`). Long steps (search + Jev, negotiation) are enqueued; the worker sends the reply when done, so iMessage never waits on an open HTTP request.
+- **Agent runtime**: the same FastAPI deploy. The background worker (`python -m worker`, Procfile `worker`) polls `sessions` / `negotiation_jobs` and runs search, negotiation, and follow-up. No separate agent infrastructure; a second Railway service on the same Postgres is the only scale-out step.
+- **Commands**: "start over" resets the session; "stop" ends it.
 
 ## Hosting / deploy
 
@@ -197,9 +217,8 @@ Response: `{ "ok": true, "session_id": "ses_01J...", "action": "search" }`
 ```text
 api/                 FastAPI app: main.py (routes), models.py (pydantic schemas)
 db/schema.sql        listings (with Tesla fields), sessions, negotiation_jobs/events
-db/load_listings.py  upsert data/listings.json into Postgres
-scraper/             Browserbase + Stagehand scraper (TypeScript): FB Marketplace + Craigslist SF
-data/                scraper output (listings.json gitignored; listings.sample.json committed)
+scraper/             Browserbase + Stagehand scraper plan (Codex): FB Marketplace + Craigslist SF
+data/                scraper output (listings.json)
 negotiation/         Dara's layer — README stub
 worker/              background job loop (stub)
 .env.example, requirements.txt, Procfile
@@ -209,7 +228,7 @@ Codex's contract fixtures and `BUILD-SPEC.md` live on `codex/*` branches and wil
 
 ## Demo script (3 min)
 
-1. **0:00** Show `data/listings.json` freshly scraped: real Tesla listings in SF with `source`, `autopilot_package`, `battery_range_mi`. "Every car you're about to see is live on Marketplace right now."
+1. **0:00** Show `data/listings.json` scraped before the demo: real Tesla listings in SF with `source`, `autopilot_package`, `battery_range_mi`. "Every car you're about to see is live on Marketplace right now."
 2. **0:30** Text the Photon number from a phone: "Model 3 or Y under 30k, FSD if possible, need it this month". Reply asks one clarifying question; answer it.
 3. **1:00** Terminal log: `total=142 → after_sql=31 → jev_scored=31 → top_n=5`, latency and cost-per-query.
 4. **1:30** iMessage shows 5 ranked Teslas with one-line Jev reasons and links. Reply "1 and 3".
