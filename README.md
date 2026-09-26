@@ -1,93 +1,56 @@
 # JEVgotiator
 
-Tell JEVgotiator what car you need. It searches listings in San Francisco, ranks the eligible cars with Jev, and helps you negotiate the ones you choose.
+A Tesla buying dashboard for San Francisco. Describe what you need, confirm the structured brief, filter the inventory, rank up to 30 candidates with Jev, and select one to three cars for a negotiation plan.
 
-**Status:** initial design for a three-person JEVathon team. This repository contains the plan and integration contracts. The application and deployment are not implemented here yet.
+The Next.js 16 app includes the dashboard and API. It ships with 1,000 clearly labeled synthetic Teslas. Live catalog and optimization adapters are implemented but require Chris's and Dara's endpoints. Jev runs when its server credential is configured; otherwise results are explicitly unscored. Railway hosts the planned dashboard and API deployment; configuration is ready and deployment verification is pending.
 
-## The product
+## Run
 
-1. Send a request from a client agent through the API, a small web interface, or Photon iMessage.
-2. Answer only the questions needed to turn the request into a confirmed, structured buyer brief.
-3. Filter the car database by budget, location, mileage, year, and other hard requirements.
-4. Let Jev score how well the eligible cars match the buyer's preferences. Return up to five cars with evidence, unknowns, and source links.
-5. Pick one to three cars. Review and approve a contact and negotiation plan.
-6. The buying agent checks availability, contacts sellers, negotiates within approved limits, and compares quotes.
-7. Receive the negotiated quotes and choose the final car. Approve its exact terms before any purchase action. Track inspection, purchase, and follow-up as separate states.
+Use Node.js 22 or 24.
 
-The database is an inventory of observed listings, not a claim to contain every car for sale in San Francisco. Advertised price, confirmed total price, and estimated total price remain distinct.
-
-## Architecture
-
-```mermaid
-flowchart TD
-    Buyer[Buyer] --> Channel[Web or Photon iMessage]
-    Channel --> API[JEVgotiator API]
-    ClientAgent[Client agent] --> API
-    API --> Clarify[Clarify and confirm buyer brief]
-    Clarify --> Filter[Filter 1: hard eligibility in code]
-    Retailer[Retailer listings] --> Ingest[Chris: ingestion and normalization]
-    Marketplace[Facebook Marketplace] --> Ingest
-    Dealers[Local car dealers] --> Ingest
-    Prototype[Browserbase / Stagehand prototype] --> Ingest
-    Ingest --> DB[(Car listings and evidence)]
-    DB --> Filter
-    Filter --> Rank[Filter 2: Jev scores and ranking]
-    Rank --> Shortlist[Up to 5 cars with evidence]
-    Shortlist --> Select[Buyer selects 1 to 3]
-    Shortlist -->|Revise preferences| Clarify
-    Select --> ContactGate[Approve contact and negotiation scope]
-    ContactGate --> Agent[Dara: durable buying-agent job]
-    Agent --> Calls[Seller calls and quote collection]
-    Calls --> Compare[Compare price, fees, condition, timing]
-    Compare --> FinalChoice[Return quotes: buyer chooses final car]
-    FinalChoice --> PurchaseGate[Approve exact vehicle and final terms]
-    PurchaseGate --> Handoff[Purchase handoff and follow-up]
-    Handoff --> Channel
-    API <--> State[(Briefs, jobs, approvals, events)]
-    Agent <--> State
+```sh
+npm ci
+npm run dev
 ```
 
-**Recommended hosting:** a Node.js API on Vercel, shared persistent storage, and durable jobs for the agent. The agent is application logic that can pause and resume; it does not inherently need its own always-on server. Use Vercel Workflows or Dara's existing durable worker. If the chosen voice SDK requires a persistent connection, host that worker separately behind the same job contract.
+Open http://localhost:3000. Local development works with synthetic inventory, guided brief extraction, unscored search, and negotiation planning without provider credentials. The development launcher supplies a temporary session secret.
 
-Search and clarification use short HTTP requests. Scraping, calls, negotiation, and scheduled follow-up run asynchronously. Jev evaluates typed questions; a conversational model handles clarification and language. Code owns filters, price arithmetic, approvals, and state transitions.
+Inject secrets through the vault or the host's environment settings. [.env.example](.env.example) lists variable names only.
 
-## Team ownership
+| Variable | Purpose |
+| --- | --- |
+| `APP_SECRET`, `DEMO_ACCESS_CODE` | Required for production sessions and team access |
+| `APP_ORIGIN` | Exact public dashboard origin, such as `https://your-service.up.railway.app`, for request-origin validation |
+| `TYPESAFE_API_KEY` | Live Jev ranking |
+| `AI_GATEWAY_API_KEY`, optional `CLARIFY_MODEL` | Model-assisted brief extraction; guided/manual entry remains available |
+| `CATALOG_API_URL`, optional `CATALOG_API_KEY` | Chris's inventory export |
+| `DARA_API_URL`, optional `DARA_API_KEY` | Dara's job submission and polling |
+| `OUTBOUND_CONTACT_ENABLED` | Defaults to false; live contact also requires buyer approval and active live listings |
+| `INTEGRATION_API_KEY` | Optional bearer access for trusted integration clients |
 
-Team coordination is in WhatsApp. Ben's September 26 update: Chris is actively consolidating the database, and Dara is building the optimization layer. This is reported work in progress; their implementations and shared contracts have not yet been integration-tested here. Photon iMessage remains the proposed buyer-facing channel.
-
-| Owner | Deliverable | Integration boundary |
-| --- | --- | --- |
-| Chris | Database consolidation, listing ingestion, freshness and deduplication | Versioned `CarListing` records and an eligible-listings query |
-| Dara | Optimization layer: pricing intelligence, seller calls, negotiation, purchase coordination and follow-up | `NegotiationJob` in; structured events and quotes out |
-| Ben | Plan, public API, buyer brief, Jev ranking, Photon adapter and integration | Shared contracts, user journey, deployment and demo |
-
-Ben owns changes to shared contracts after checking them with Chris and Dara. Each person keeps their existing implementation choices where they satisfy the contract.
-
-## Build packet
-
-- [BUILD-SPEC.md](BUILD-SPEC.md): scope, contracts, endpoints, ranking, jobs, approval states, build order and acceptance checks.
-- [Integration research](docs/integration-research.md): verified provider capabilities and unresolved integration choices.
-- [Team sketch interpretation](docs/team-sketch.md): rough-note flow, field mapping and uncertain handwriting.
-- [Car listing example](examples/car-listing.json), [buyer brief example](examples/search-brief.json), and [negotiation handoff example](examples/negotiation-job.json): synthetic fixtures for parallel development.
-
-Proposed implementation layout, to create as code is added:
-
-```text
-apps/api/          HTTP routes, Photon adapter, buyer conversation, ranking
-apps/agent/        Dara's job adapter and buying workflow
-packages/contracts/  Shared runtime schemas and types
-packages/catalog/    Chris's listing queries and normalization adapter
-examples/         Synthetic contract fixtures
+```sh
+npm test
+npm run typecheck
+npm run build
+npm start
 ```
 
-There is no application run command yet. No provider credentials belong in this repository; inject them from the vault into the runtime environment.
+Regenerate the deterministic import dataset with `npm run seed:catalog`. It writes [data/catalog.json](data/catalog.json), not a database. [railway.toml](railway.toml) defines the production build, start command, and health endpoint.
 
-## First working demo
+## Integration map
 
-A buyer asks for a car under a stated budget in San Francisco. JEVgotiator clarifies the budget basis and timeline, filters real or clearly labeled demo listings, and ranks five candidates. The buyer selects up to three, authorizes a bounded seller contact, and receives a quote comparison. A purchase-ready handoff shows the next approval needed.
+- **Chris:** catalog consolidation and source freshness. [Catalog contract](docs/catalog-integration.md).
+- **Dara:** optimization, seller contact, and quote collection. [Optimization contract](docs/optimization-integration.md).
+- **Ben:** dashboard, clarification, hard filters, Jev ranking, integration, and deployment.
+- **WhatsApp:** team coordination. **Photon:** planned buyer messaging; team number and webhook integration are pending.
 
-Actual payment, financing, deposits, title transfer, and signatures are outside the first demo. The design leaves a specific approval boundary for later execution. Live, synthetic, and replayed steps must be labeled.
+[BUILD-SPEC.md](BUILD-SPEC.md) describes the implemented architecture, routes, contracts, and remaining work. Runtime contracts live in [lib/contracts.ts](lib/contracts.ts). Files under `examples/` preserve the earlier design fixtures and are not the current HTTP request shapes.
 
 ## Known gaps
 
-Chris's database technology, Dara's call provider and runtime, and the team's Browserbase prototype revision are not confirmed. Inventory sources in the diagram are planned; the sketch's retailer name needs confirmation. Photon line setup and end-to-end messaging are untested. Earlier session checks verified TypeSafe inference and Vercel account access, but do not establish a deployed JEVgotiator integration.
+- Inventory is synthetic until Chris's API is connected. The 30-candidate scoring cap is explicit; ranking does not evaluate the entire eligible pool.
+- There is no database, durable job queue, scheduled follow-up, or persistent approval ledger. Searches use session-bound encrypted result tokens and browser session storage.
+- Dara's adapter needs a verified endpoint with durable job storage and idempotency. Local planning makes no calls and invents no negotiated prices.
+- Photon, Browserbase ingestion, seller contact, and provider quote delivery are not established as working integrations by configuration alone.
+- Asking price does not prove an out-the-door budget. History, battery condition, availability, fees, and seller claims require verification.
+- No purchase, payment, deposit, financing, signature, or title-transfer action exists. Final choice and JSON export are a handoff only.
