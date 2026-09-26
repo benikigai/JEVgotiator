@@ -48,10 +48,32 @@ export type SearchResult = {
   counts: { total: number; eligible: number; candidates: number; scored: number; shown: number };
   ranking: Omit<Ranking, "results">; catalog: Omit<Catalog, "cars">; created_at: string;
 };
+export const daraIntelligenceSchema = z.object({
+  source: z.literal("dara-sample"), source_commit: z.string(), method: z.string(), assumptions: z.array(z.string()).max(10),
+  candidates: z.array(z.object({
+    listing_id: z.string(), rank: z.number().int().positive(), score: z.number().min(0).max(100),
+    signals: z.object({ value: z.number(), evidence: z.number(), road_trip: z.number(), model_fit: z.number(), mileage_year_battery: z.number() }),
+    unknowns: z.array(z.string()).max(20),
+  })).max(3),
+});
+export const optimizationSimulationSchema = z.object({
+  mode: z.literal("synthetic_scenario"),
+  assumptions: z.array(z.string().max(4000)).max(10),
+  candidates: z.array(z.object({
+    listing_id: z.string().max(200), asking_price: z.number().finite().positive(),
+    opening_offer: z.number().finite().nonnegative(), simulated_counter: z.number().finite().nonnegative(),
+    simulated_agreed_price: z.number().finite().nonnegative(), simulated_savings: z.number().finite().nonnegative(),
+    recommendation: z.string().max(4000),
+  })).min(1).max(3),
+  actions: z.array(z.object({ label: z.string().max(200), detail: z.string().max(4000), state: z.enum(["done", "pending", "blocked"]) })).max(10),
+  disclaimer: z.string().max(4000),
+});
+export type DaraIntelligence = z.infer<typeof daraIntelligenceSchema>;
+export type OptimizationSimulation = z.infer<typeof optimizationSimulationSchema>;
 export type Optimization = {
   id: string; mode: "planning" | "live"; status: "ready" | "pending" | "completed" | "needs_review";
   summary: string; plans: { listing_id: string; title: string; asking_price: number | null; target_price: number | null; questions: string[]; opening_message: string }[];
   quotes: { listing_id: string; seller: string; price: number; total: number | null; terms: string; evidence: string | null }[];
   events: { label: string; detail: string; state: "done" | "pending" | "blocked" }[];
-  provider_job_id: string | null; job_token?: string; warning: string | null;
+  provider_job_id: string | null; job_token?: string; warning: string | null; simulation?: OptimizationSimulation; intelligence?: DaraIntelligence;
 };

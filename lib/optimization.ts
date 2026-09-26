@@ -1,6 +1,8 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { briefSchema, type Brief, type Car, type Optimization } from "./contracts";
+import { briefSchema, type Brief, type Car, type Optimization, type OptimizationSimulation, type DaraIntelligence } from "./contracts";
+
+import { scoreDaraSelections } from "./dara-intelligence";
 
 const TIMEOUT_MS = 12_000;
 const quoteSchema = z.object({
@@ -44,6 +46,39 @@ function validateSelection(cars: Car[], brief: Brief) {
   }
 }
 
+function syntheticScenario(cars: Car[], brief: Brief, intelligence: DaraIntelligence): OptimizationSimulation | undefined {
+  if (!cars.every((car) => car.mode === "synthetic" && car.price !== null && Number.isFinite(car.price) && car.price > 0)) return undefined;
+  const ordered = intelligence.candidates.map((candidate) => cars.find((car) => car.id === candidate.listing_id)!);
+  const candidates = ordered.map((car, index) => {
+    const asking = car.price!;
+    const amount = (rate: number) => Math.floor(asking * rate * 100) / 100;
+    const settlement = amount(0.95);
+    return {
+      listing_id: car.id, asking_price: asking, opening_offer: amount(0.92), simulated_counter: amount(0.98),
+      simulated_agreed_price: settlement, simulated_savings: Math.round((asking - settlement) * 100) / 100,
+      recommendation: `Scenario rank ${index + 1} follows Dara's selected-car intelligence score (${intelligence.candidates[index].score}/100), with condition assumptions shown separately. ${settlement <= brief.budget ? "Assumed vehicle price is within" : "Assumed vehicle price exceeds"} the $${brief.budget.toLocaleString("en-US")} budget before taxes and fees.`,
+    };
+  });
+  return {
+    mode: "synthetic_scenario",
+    assumptions: [
+      "All selected listings are synthetic. Opening offer is 92%, counter is 98%, and assumed agreement is 95% of the listed asking price.",
+      "These fixed demo discounts are scenario rules, not market valuations, seller willingness, or predicted negotiation outcomes.",
+      `Buyer budget is $${brief.budget.toLocaleString("en-US")} on an ${brief.budget_basis === "out_the_door" ? "out-the-door" : "advertised-price"} basis. Taxes, registration, and fees are unknown; budget fit and savings are provisional vehicle-price comparisons.`,
+      "Candidate order follows Dara's intelligence score, not the assumed discount. Evidence coverage does not establish vehicle condition.",
+    ],
+    candidates,
+    actions: [
+      { label: "Simulated pricing analysis", detail: `Compared ${cars.length} synthetic selections using disclosed fixed percentages.`, state: "done" },
+      { label: "Simulated opening offer", detail: "Scenario opens at 92% of asking. No offer was sent.", state: "done" },
+      { label: "Simulated seller counter", detail: "Scenario assumes a counter at 98% of asking. No seller replied.", state: "done" },
+      { label: "Simulated agreement", detail: "Scenario assumes 95% of asking. No agreement, reservation, or purchase exists.", state: "done" },
+      { label: "Real inspection and purchase", detail: "Requires live inventory, verified title and battery condition, an itemized quote, and separate buyer approval.", state: "blocked" },
+    ],
+    disclaimer: "SIMULATION ONLY. These prices and actions are invented demo scenarios for synthetic cars. No seller contact, seller response, binding offer, or purchase occurred.",
+  };
+}
+
 export function createOptimization(cars: Car[], brief: Brief): Optimization {
   validateSelection(cars, brief);
   const plans = cars.map((car) => {
@@ -70,6 +105,8 @@ export function createOptimization(cars: Car[], brief: Brief): Optimization {
       opening_message: `Hello, I am helping a buyer evaluate your ${title}. Is this exact vehicle still available? Please share its VIN, title and accident history, service records, and an itemized out-the-door quote. The buyer would also like an independent inspection before deciding. This inquiry is nonbinding and does not authorize a deposit, reservation, or purchase.`,
     };
   });
+  const intelligence = scoreDaraSelections(cars, brief);
+  const simulation = syntheticScenario(cars, brief, intelligence);
   const digest = createHash("sha256").update(JSON.stringify({ brief, plans })).digest("hex").slice(0, 20);
   return {
     id: `plan_${digest}`,
@@ -77,10 +114,12 @@ export function createOptimization(cars: Car[], brief: Brief): Optimization {
     status: "ready",
     summary: `Prepared seller questions for ${cars.length} selected ${cars.length === 1 ? "car" : "cars"}. No seller contact has occurred.`,
     plans,
+    intelligence,
+    ...(simulation ? { simulation } : {}),
     quotes: [],
     events: [
       { label: "Buyer shortlist received", detail: `${cars.length} selected listings prepared for review.`, state: "done" },
-      { label: "Seller questions prepared", detail: "Asking prices are listing data. No discount or negotiated offer has been invented.", state: "done" },
+      { label: "Seller questions prepared", detail: "Asking prices are listing data. No real negotiated offer is available; any synthetic scenario is labeled separately.", state: "done" },
       { label: "Seller contact", detail: "Requires explicit contact approval and the configured Dara integration.", state: "pending" },
       { label: "Review seller quotes", detail: "Compare supported quotes and itemized fees before selecting a final car.", state: "pending" },
       { label: "Purchase approval", detail: "A separate buyer decision is required before any binding commitment.", state: "pending" },

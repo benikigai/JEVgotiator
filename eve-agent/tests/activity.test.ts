@@ -32,3 +32,17 @@ test("assistant deltas are replaced by completed messages and contact details ar
   assert.equal(output.messages.length, 1);
   assert.equal(output.messages[0].text, "Contact [contact withheld]");
 });
+
+test("recorded plan retains labeled simulation and Dara provenance without secret fields", () => {
+  const simulation = {
+    mode: "synthetic_scenario", assumptions: ["Fixed demo percentages."],
+    candidates: [{ listing_id: "sample-1", asking_price: 30000, opening_offer: 27600, simulated_counter: 29400, simulated_agreed_price: 28500, simulated_savings: 1500, recommendation: "Scenario rank 1" }],
+    actions: [{ label: "Simulated agreement", detail: "No actual seller replied.", state: "done" }], disclaimer: "SIMULATION ONLY", result_token: "hidden",
+  };
+  const intelligence = { source: "dara-sample", source_commit: "163fa478", method: "Dara scoring", assumptions: [], candidates: [{ listing_id: "sample-1", rank: 1, score: 70, signals: { value: 90, evidence: 30.5, road_trip: 78, model_fit: 76, mileage_year_battery: 76 }, unknowns: ["Battery unknown"] }] };
+  const output = projectEvents([event("1", "action.result", { status: "completed", result: { callId: "plan1", toolName: "prepare_deal_plan", output: { id: "plan-1", mode: "planning", status: "ready", summary: "No contact.", plans: [], warning: null, simulation, intelligence, api_key: "hidden" } } })]);
+  assert.equal(output.optimization!.simulation!.candidates[0].simulated_agreed_price, 28500);
+  assert.equal(output.optimization!.intelligence!.source, "dara-sample");
+  assert.deepEqual(output.optimization!.quotes, []);
+  assert.ok(!JSON.stringify(output).includes("hidden"));
+});

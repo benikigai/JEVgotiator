@@ -124,3 +124,41 @@ test("status reads work with outbound disabled and require the requested job ID"
   globalThis.fetch = async () => Response.json({ job_id: "another-job", status: "completed" });
   await assert.rejects(getOptimizationStatus("job/1"), (error) => error instanceof OptimizationDispatchError && error.code === "unavailable");
 });
+
+test("synthetic negotiation uses bounded deterministic assumptions without any outbound calls", () => {
+  let calls = 0;
+  globalThis.fetch = async () => { calls++; throw new Error("No scenario may contact a provider"); };
+  const selected = [{ ...car, mode: "synthetic" as const }, { ...car, id: "tesla-2", price: 23000, mode: "synthetic" as const }];
+  const result = createOptimization(selected, { ...brief, budget_basis: "out_the_door" });
+  assert.deepEqual(result, createOptimization(selected, { ...brief, budget_basis: "out_the_door" }));
+  assert.equal(result.simulation?.mode, "synthetic_scenario");
+  for (const candidate of result.simulation!.candidates) {
+    assert.ok(candidate.opening_offer <= candidate.simulated_agreed_price);
+    assert.ok(candidate.simulated_agreed_price <= candidate.simulated_counter);
+    assert.ok(candidate.simulated_counter <= candidate.asking_price);
+    assert.equal(candidate.simulated_savings, Math.round((candidate.asking_price - candidate.simulated_agreed_price) * 100) / 100);
+  }
+  assert.equal(result.simulation!.candidates[0].listing_id, result.intelligence!.candidates[0].listing_id);
+  assert.match(result.simulation!.disclaimer, /SIMULATION ONLY/);
+  assert.match(result.simulation!.assumptions.join(" "), /out-the-door.*Taxes.*unknown/);
+  assert.ok(result.plans.every((plan) => plan.target_price === null));
+  assert.deepEqual(result.quotes, []);
+  assert.equal(result.provider_job_id, null);
+  assert.equal(calls, 0);
+});
+
+test("live, replay, mixed, and unpriced selections never receive simulated seller outcomes", () => {
+  for (const cars of [[car], [{ ...car, mode: "replay" as const }], [car, { ...car, id: "synthetic-1", mode: "synthetic" as const }], [{ ...car, mode: "synthetic" as const, price: null }]]) {
+    assert.equal(createOptimization(cars, brief).simulation, undefined);
+  }
+});
+
+test("selected-car intelligence ports Dara's exact formula with missing evidence disclosed", () => {
+  const result = createOptimization([car], brief);
+  assert.equal(result.intelligence!.source, "dara-sample");
+  assert.equal(result.intelligence!.source_commit, "163fa4787cb9151b76af917f643483ddb0f7f97e");
+  assert.equal(result.intelligence!.candidates[0].score, 70);
+  assert.equal(result.intelligence!.candidates[0].signals.evidence, 30.5);
+  assert.match(result.intelligence!.candidates[0].unknowns.join(" "), /Battery condition is unknown.*VIN is absent/);
+  assert.equal(result.simulation, undefined);
+});

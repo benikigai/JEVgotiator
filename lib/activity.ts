@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { briefSchema, type Car, type JevTrace } from "./contracts";
+import { briefSchema, optimizationSimulationSchema, daraIntelligenceSchema, type Car, type JevTrace } from "./contracts";
 import type { ActivityResponse } from "./activity-contract";
 
 const short = z.string().max(8000);
@@ -25,7 +25,7 @@ const publicSearchSchema = z.object({
 const optimizationSchema = z.object({
   id: short, mode: z.literal("planning"), status: z.enum(["ready", "pending", "completed", "needs_review"]), summary: short,
   plans: z.array(z.object({ listing_id: short, title: short, asking_price: nullableNumber, target_price: z.null(), questions: z.array(short).max(30), opening_message: short })).max(3),
-  warning: short.nullable(),
+  warning: short.nullable(), simulation: optimizationSimulationSchema.optional(), intelligence: daraIntelligenceSchema.optional(),
 });
 const activitySchema = z.object({
   source: z.literal("eve"), status: z.literal("live"), fetched_at: short,

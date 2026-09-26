@@ -37,3 +37,16 @@ test("unconfigured activity returns an explicit empty state without network acce
     if (env !== undefined) process.env.EVE_AGENT_URL = env;
   }
 });
+
+test("activity preserves labeled simulation while stripping unrelated private provider data", () => {
+  const simulation = {
+    mode: "synthetic_scenario", assumptions: ["Fixed demo percentages, not market value."],
+    candidates: [{ listing_id: "sample-1", asking_price: 30000, opening_offer: 27600, simulated_counter: 29400, simulated_agreed_price: 28500, simulated_savings: 1500, recommendation: "Scenario rank 1", private_secret: "hidden" }],
+    actions: [{ label: "Simulated agreement", detail: "No actual agreement exists.", state: "done" }], disclaimer: "SIMULATION ONLY", token: "hidden",
+  };
+  const output = normalizeActivity({ ...sample, optimization: { id: "plan-1", mode: "planning", status: "ready", summary: "No seller contact.", plans: [], warning: null, simulation } });
+  assert.equal(output.optimization!.simulation!.candidates[0].simulated_agreed_price, 28500);
+  assert.equal(output.optimization!.simulation!.disclaimer, "SIMULATION ONLY");
+  assert.deepEqual(output.optimization!.quotes, []);
+  assert.ok(!JSON.stringify(output).includes("hidden"));
+});
