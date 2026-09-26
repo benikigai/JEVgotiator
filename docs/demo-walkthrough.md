@@ -1,12 +1,12 @@
 # Two-minute JEVgotiator demo
 
-Status: Vercel and Railway `5764a56` have verified live Activity. The user confirmed a real iMessage reply; the matching Activity conversation showed seven messages and five search results. Landing, `/dashboard`, `/reset`, and Dara intelligence/simulation are implemented but await the next deployment and a fresh-plan check.
+Status: Vercel, Railway, and Eve are deployed; the core intelligence flow was verified at `82ee96a` and participant names at `2cf8f46`. Live messages, Jev tools, landing, and browser reset are verified. The user confirmed an actual iMessage reply and the `/reset` acknowledgment followed by a fresh reply. A fresh Eve plan returned Dara intelligence and a labeled synthetic negotiation scenario.
 
 ## Before presenting
 
-After the next deployment, open [the Activity dashboard](https://jevgotiator.vercel.app/dashboard?view=activity) and sign in. Before that deployment, use the existing dashboard at `/`. Text the recipient line assigned to your Photon-registered sender; assignments can differ per user. Keep personal numbers, access codes, and credentials off the shared screen and out of the repo. Confirm the feed identifies the conversation as **Photon iMessage**, not an HTTP operator test.
+Open [the Activity dashboard](https://jevgotiator.vercel.app/dashboard?view=activity) and sign in. Hand Chris's registered phone to the judge. The dashboard follows the newest fresh Chris iMessage session and hides the team's earlier sessions. Keep personal numbers, access codes, and credentials off the shared screen and out of the repo. Confirm the feed identifies the conversation as **Photon iMessage**, not an HTTP operator test. Recent messages and observed workflow stages are the main presentation view; expand full history only when needed.
 
-Once the reset update is deployed, send `/reset` before rehearsing. Prior history stays available; your next text starts a fresh conversation. Use a new plan to show Dara intelligence because old plans are not rewritten. For a dashboard-only restart, **New web search** clears local web results and returns to Search without resetting iMessage history. Eve’s plan reply includes a draft message and dashboard link; it does not send the draft to a seller.
+On Chris's phone, send `/reset` before the judge's request. Prior history stays saved, but only new Chris sessions appear in the demo view. Wait for Eve's reset acknowledgment, then let the judge text their request. Use a new plan to show Dara intelligence because old plans are not rewritten. **New web search** clears browser search state only. Eve’s plan reply includes a draft message and dashboard link; it does not send the draft to a seller.
 
 ## Presentation
 
@@ -26,7 +26,7 @@ Wait for real replies and use the current counts. Do not claim the timing or the
 - **Live inference:** `ranking.mode: live_jev`, the returned model, real score answers, latency, and usage. `unscored_fallback` means Jev scoring did not complete.
 - **Fixture inventory:** all 1,000 bundled cars are synthetic and remain labeled. Live Jev inference does not make them real listings.
 - **Intelligence:** Dara’s actual scoring rules from branch `163fa478` compare selected cars. Unknown battery and model heuristics are disclosed; original Jev scores stay intact.
-- **Simulation:** a priced synthetic selection can show a 92% opening, 98% counter, and 95% settlement scenario. These are explicit demo assumptions, not real quotes or predicted outcomes. Verify a new plan after deployment before presenting this capability as live.
+- **Simulation:** a priced synthetic selection can show a 92% opening, 98% counter, and 95% settlement scenario. These are explicit demo assumptions, not real quotes or predicted outcomes. Use a new plan; historical plans are not rewritten.
 - **Action boundary:** real catalog, live seller negotiation, seller quotes, and purchases remain pending.
 
 If the iMessage or Activity connection fails, switch to the verified dashboard search and call it a dashboard demo. Never substitute a stored HTTP test or another conversation while describing a live Photon result.

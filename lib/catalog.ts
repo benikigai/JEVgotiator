@@ -3,7 +3,8 @@ import type { Brief, Car, Catalog } from "./contracts";
 
 const MAX_RECORDS = 5_000;
 const MAX_RESPONSE_BYTES = 8_000_000;
-const LIVE_PROVIDERS = new Set(["fb_marketplace", "facebook_marketplace", "carmax", "carvana", "dealer", "local_dealer", "tesla"]);
+const LIVE_PROVIDERS = new Set(["fb_marketplace", "facebook_marketplace", "carmax", "carvana", "dealer", "local_dealer", "tesla", "marketcheck"]);
+let marketcheckCache: { until: number; records: unknown[]; total: number } | null = null;
 type Row = Record<string, unknown>;
 const object = (value: unknown): Row => value !== null && typeof value === "object" && !Array.isArray(value) ? value as Row : {};
 const text = (value: unknown, max = 160): string => typeof value === "string" ? value.trim().slice(0, max) : "";
@@ -85,9 +86,9 @@ export function normalizeCar(value: unknown): Car | null {
   };
 }
 
-async function readPage(url: URL, signal: AbortSignal): Promise<unknown> {
+async function readPage(url: URL, signal: AbortSignal, catalogAuth = true): Promise<unknown> {
   const headers: Record<string, string> = { Accept: "application/json" };
-  if (process.env.CATALOG_API_KEY) headers.Authorization = `Bearer ${process.env.CATALOG_API_KEY}`;
+  if (catalogAuth && process.env.CATALOG_API_KEY) headers.Authorization = `Bearer ${process.env.CATALOG_API_KEY}`;
   const response = await fetch(url, { headers, signal, cache: "no-store", redirect: "error" });
   if (!response.ok) throw new Error(`Catalog API returned HTTP ${response.status}. Check Chris's export endpoint and API credentials.`);
   if (Number(response.headers.get("content-length")) > MAX_RESPONSE_BYTES) throw new Error("Catalog response exceeds the 8 MB limit.");
@@ -104,6 +105,29 @@ async function readPage(url: URL, signal: AbortSignal): Promise<unknown> {
   }
   try { return JSON.parse(Buffer.concat(chunks).toString("utf8")); }
   catch { throw new Error("Catalog API did not return valid JSON."); }
+}
+
+async function marketcheckRecords(): Promise<{ records: unknown[]; total: number }> {
+  if (marketcheckCache && marketcheckCache.until > Date.now()) return marketcheckCache;
+  const url = new URL("https://api.marketcheck.com/v2/search/car/active");
+  url.search = new URLSearchParams({ api_key: process.env.MARKETCHECK_API_KEY!, country: "us", state: "CA", city: "San Francisco", make: "Tesla", car_type: "used", has_price: "true", has_miles: "true", rows: "50" }).toString();
+  const payload = object(await readPage(url, AbortSignal.timeout(8_000), false));
+  if (!Array.isArray(payload.listings)) throw new Error("MarketCheck did not return a listings array.");
+  const records = payload.listings.map((entry) => {
+    const listing = object(entry), build = object(listing.build), dealer = object(listing.dealer), media = object(listing.media);
+    return {
+      id: listing.id ?? listing.vin, make: build.make ?? "Tesla", model: build.model, year: build.year,
+      price: listing.price, mileage: listing.miles, exterior_color: build.exterior_color,
+      city: dealer.city ?? listing.city, photos: media.photo_links, listing_url: listing.vdp_url,
+      title_status: listing.carfax_clean_title === true ? "clean" : "unknown",
+      seller: { id: dealer.id, name: dealer.name, type: "dealer", contact_available: false },
+      source: { provider: "marketcheck" }, mode: "live", status: "active", observed_at: new Date().toISOString(),
+      description: "MarketCheck listing facts. VIN, battery, history, and physical condition need independent verification.",
+    };
+  });
+  const result = { records, total: typeof payload.num_found === "number" ? payload.num_found : records.length };
+  marketcheckCache = { ...result, until: Date.now() + 10 * 60_000 };
+  return result;
 }
 
 export async function loadCatalog(): Promise<Catalog> {
@@ -146,6 +170,12 @@ export async function loadCatalog(): Promise<Catalog> {
       if (error instanceof TypeError) throw new Error("Catalog API could not be reached. Check the configured endpoint; synthetic inventory was not substituted.");
       throw error;
     }
+  } else if (process.env.MARKETCHECK_API_KEY) {
+    const live = await marketcheckRecords();
+    records = live.records;
+    source = "MarketCheck active used-Tesla dealer search, San Francisco, CA";
+    if (live.total > records.length) warnings.push(`MarketCheck reports ${live.total} matches; this bounded demo fetched the first ${records.length}. Additional pages were not evaluated.`);
+    warnings.push("MarketCheck listing facts are not VIN, battery, title, or physical-condition verification. INSPECT every live car.");
   } else {
     records = fixture;
     warnings.push("Synthetic demonstration inventory. These vehicles are not real listings and no seller can be contacted.");
@@ -168,7 +198,7 @@ export async function loadCatalog(): Promise<Catalog> {
   if (cars.some((car) => !car.observed_at)) warnings.push("Some records have no observation timestamp. Inventory freshness is unverified.");
   if (cars.some((car) => car.mode === "replay")) warnings.push("Some records lack recognized live provenance and are labeled replay. Seller availability has not been independently verified.");
   const modes = new Set(cars.map((car) => car.mode));
-  const mode: Catalog["mode"] = modes.size === 1 && modes.has("live") ? "live" : !configured || (modes.size === 1 && modes.has("synthetic")) ? "synthetic" : "mixed";
+  const mode: Catalog["mode"] = modes.size === 1 && modes.has("live") ? "live" : modes.size === 1 && modes.has("synthetic") ? "synthetic" : !configured && !process.env.MARKETCHECK_API_KEY ? "synthetic" : "mixed";
   return { cars, mode, source, fetched_at: new Date().toISOString(), warnings };
 }
 

@@ -1,29 +1,28 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight, ArrowUpRight, Braces, Check, Database, GitBranch, Layers3, MessageCircle, Search, ShieldCheck, SlidersHorizontal, Sparkles, Workflow, Zap } from "lucide-react";
-import "./landing.css";
-import "./landing-polish.css";
 
 const demoHref = "/dashboard?view=activity";
 const githubHref = "https://github.com/benikigai/JEVgotiator";
 
 const flow = [
-  { icon: MessageCircle, name: "Send a message", detail: "Photon · iMessage", tag: "01" },
-  { icon: Sparkles, name: "Clarify the brief", detail: "Eve · Vercel", tag: "02" },
-  { icon: Workflow, name: "Start the search", detail: "Railway API", tag: "03" },
-  { icon: SlidersHorizontal, name: "Apply constraints", detail: "Deterministic filters", tag: "04" },
-  { icon: Zap, name: "Score the fit", detail: "TypeSafe · Jev", tag: "05" },
-  { icon: Search, name: "Compare the top 5", detail: "Buyer selects 1–3", tag: "06" },
-  { icon: SlidersHorizontal, name: "Compare your picks", detail: "Dara intelligence", tag: "07" },
-  { icon: ShieldCheck, name: "Explore a plan", detail: "Simulated negotiation", tag: "08" },
+  { icon: MessageCircle, name: "Send a message", detail: "iMessage via Photon", tag: "01" },
+  { icon: Sparkles, name: "Clarify the brief", detail: "Eve agent", tag: "02" },
+  { icon: Workflow, name: "Start the search", detail: "Search API", tag: "03" },
+  { icon: SlidersHorizontal, name: "Apply constraints", detail: "Budget, year, miles", tag: "04" },
+  { icon: Zap, name: "Score the fit", detail: "Jev model", tag: "05" },
+  { icon: Search, name: "Compare the top 5", detail: "You pick 1 to 3", tag: "06" },
+  { icon: SlidersHorizontal, name: "Compare your picks", detail: "Dara’s scoring", tag: "07" },
+  { icon: ShieldCheck, name: "Explore a plan", detail: "Practice negotiation", tag: "08" },
 ];
 
 const stack = [
-  { icon: Braces, title: "The dashboard", tech: "Next.js 16 · TypeScript · Zod", text: "A shared web interface for search, comparison, decision traces, and conversation activity." },
-  { icon: MessageCircle, title: "The conversation", tech: "Photon · Eve 0.67", text: "Signed iMessage webhooks reach an agent that clarifies the brief and calls search and planning tools." },
-  { icon: Zap, title: "The decision layer", tech: "TypeSafe · Jev 1.13", text: "Bounded model calls score preference fit from listing evidence. Questions, answers, and score composition are visible." },
-  { icon: Database, title: "The demo inventory", tech: "1,000 synthetic Tesla listings", text: "A repeatable test catalog for the full search flow. Chris’s real catalog integration is still pending." },
-  { icon: Layers3, title: "The runtime", tech: "Vercel · Railway", text: "Vercel serves the dashboard and Eve agent. Eve calls the Railway API for the search and planning workflow." },
-  { icon: ShieldCheck, title: "The intelligence layer", tech: "Dara’s scoring · Disclosed simulation", text: "Dara’s weighted rules compare your selected cars. A separate synthetic-only offer timeline demonstrates negotiation; no seller is contacted." },
+  { icon: Braces, title: "The dashboard", tech: "Next.js 16 · TypeScript · Zod", text: "One web app for search, comparison, Jev’s decision trace, and live iMessage activity." },
+  { icon: MessageCircle, title: "The conversation", tech: "Photon · Eve 0.67", text: "iMessages reach an agent that clarifies what you want, then runs the search and planning tools." },
+  { icon: Zap, title: "The decision layer", tech: "TypeSafe · Jev 1.13", text: "Jev scores how well each listing fits you. Every question, answer, and weight is visible." },
+  { icon: Database, title: "The demo inventory", tech: "1,000 sample Tesla listings", text: "A repeatable test catalog for the full flow. Chris’s real catalog is not connected yet." },
+  { icon: Layers3, title: "The runtime", tech: "Vercel · Railway", text: "Vercel runs the Eve agent. Railway runs the dashboard and search API." },
+  { icon: ShieldCheck, title: "The intelligence layer", tech: "Dara’s scoring, labeled practice run", text: "Dara’s rules compare your picks. A separate practice timeline shows how an offer could go. No seller is contacted." },
 ];
 
 function CarIllustration() {
@@ -49,7 +48,8 @@ function CarIllustration() {
   </svg>;
 }
 
-export default function Page() {
+export default async function Page({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  if ((await searchParams).view === "activity") redirect("/dashboard?view=activity");
   return <div className="landing">
     <header className="landing-header landing-shell">
       <Link href="/" className="landing-brand" aria-label="JEVgotiator home"><span className="landing-brand-mark"><ArrowUpRight size={23} strokeWidth={2.7} /></span>JEVgotiator<span className="landing-brand-dot">.</span></Link>
@@ -60,48 +60,48 @@ export default function Page() {
     <main>
       <section className="landing-hero landing-shell">
         <div className="landing-hero-copy">
-          <div className="landing-eyebrow"><span /> BUILT AT JEVATHON · SAN FRANCISCO</div>
+          <div className="landing-eyebrow"><span /> Built at JEVathon, San Francisco</div>
           <h1>Your next Tesla.<br /><span>Your terms.</span></h1>
-          <p className="landing-intro">Text what you need. Turn a thousand listings into a shortlist you can explain, and a negotiation plan you can act on.</p>
+          <p className="landing-intro">Text us what you want. We turn 1,000 listings into five good picks, and give you a plan for the deal.</p>
           <div className="landing-actions"><Link className="landing-button landing-button-dark" href={demoHref}>Open demo dashboard <ArrowUpRight size={19} /></Link><a className="landing-text-link" href="#architecture">See how it works <ArrowRight size={17} /></a></div>
-          <p className="landing-access-note">Team demo code required. Synthetic inventory, real model inference.</p>
+          <p className="landing-access-note">Demo code required. Sample inventory, real model scoring.</p>
         </div>
         <div className="landing-hero-art">
-          <div className="landing-art-top"><span>THE SEARCH, REIMAGINED</span><span className="landing-art-chip"><Zap size={13} /> Powered by Jev</span></div>
+          <div className="landing-art-top"><span>How we search</span><span className="landing-art-chip"><Zap size={13} /> Scored by Jev</span></div>
           <CarIllustration />
           <div className="landing-art-bottom"><span>Less scrolling.<br /><strong>More signal.</strong></span><div className="landing-art-seal"><ArrowUpRight size={29} /></div></div>
-          <span className="landing-illustration-label">Product illustration · synthetic inventory</span>
+          <span className="landing-illustration-label">Illustration. Sample inventory.</span>
         </div>
       </section>
 
       <section className="landing-stats landing-shell" aria-label="Demo scope">
-        <div><strong>1,000<span> Teslas</span></strong><p>Synthetic demo inventory</p></div>
-        <div><strong>30<span> candidates</span></strong><p>Maximum per Jev scoring call</p></div>
-        <div><strong>5<span> matches</span></strong><p>Maximum shortlist size</p></div>
-        <div><strong>1–3<span> picks</span></strong><p>Your choices for a buying plan</p></div>
+        <div><strong>1,000<span> Teslas</span></strong><p>Sample listings in the demo</p></div>
+        <div><strong>30<span> candidates</span></strong><p>Cars Jev scores per search</p></div>
+        <div><strong>5<span> matches</span></strong><p>Cars in your shortlist</p></div>
+        <div><strong>1–3<span> picks</span></strong><p>Cars you take to the deal</p></div>
       </section>
 
       <section className="landing-architecture" id="architecture">
         <div className="landing-shell">
-          <div className="landing-section-heading"><div><span className="landing-kicker">FROM MESSAGE TO MOMENTUM</span><h2>A clear path to a better deal.</h2></div><p>Code handles your constraints. Jev evaluates the fit. You make the choice.</p></div>
+          <div className="landing-section-heading"><div><span className="landing-kicker">How it works</span><h2>A clear path to a better deal.</h2></div><p>Code applies your limits. Jev scores the fit. You choose.</p></div>
           <ol className="landing-flow">{flow.map(({ icon: Icon, name, detail, tag }, index) => <li key={name} className={index === 4 ? "landing-flow-jev" : ""}><div className="landing-flow-top"><Icon size={23} strokeWidth={1.6} /><span>{tag}</span></div><h3>{name}</h3><p>{detail}</p>{index < flow.length - 1 && <ArrowRight className="landing-flow-arrow" size={16} />}</li>)}</ol>
           <div className="landing-principles">
-            <article><span className="landing-principle-number">01 / FILTER</span><h3>Start with the non-negotiables.</h3><p>Budget, mileage, year, and location narrow the catalog before any model scoring. Hard constraints stay in code.</p></article>
-            <article><span className="landing-principle-number">02 / UNDERSTAND</span><h3>Show what Jev actually did.</h3><p>Inspect the exact questions, listing context, returned scores, and final weighted ranking. Missing evidence stays unknown.</p></article>
-            <article><span className="landing-principle-number">03 / DECIDE</span><h3>Keep the buyer in the loop.</h3><p>Choose up to three cars. Dara’s intelligence weights value, evidence, model fit, and other signals, then a labeled simulation explores an offer timeline. No seller is contacted.</p></article>
+            <article><span className="landing-principle-number">1. Filter</span><h3>Start with the non-negotiables.</h3><p>Budget, mileage, year, and location cut the list first. No model touches those rules.</p></article>
+            <article><span className="landing-principle-number">2. Understand</span><h3>Show what Jev actually did.</h3><p>See the exact questions Jev was asked, the scores it returned, and how they add up. Missing facts stay marked as unknown.</p></article>
+            <article><span className="landing-principle-number">3. Decide</span><h3>Keep the buyer in the loop.</h3><p>Pick up to three cars. Dara’s rules compare them, then a clearly labeled practice run walks through an offer. No seller is contacted.</p></article>
           </div>
         </div>
       </section>
 
       <section className="landing-stack landing-shell" id="stack">
-        <div className="landing-section-heading"><div><span className="landing-kicker">UNDER THE HOOD</span><h2>Small team. Connected system.</h2></div><p>Purpose-built components, one buying workflow. Here is what is implemented today.</p></div>
+        <div className="landing-section-heading"><div><span className="landing-kicker">The stack</span><h2>Small team. Connected system.</h2></div><p>What is built and running today.</p></div>
         <div className="landing-stack-grid">{stack.map(({ icon: Icon, title, tech, text }) => <article className="landing-stack-card" key={title}><div className="landing-stack-icon"><Icon size={21} strokeWidth={1.7} /></div><h3>{title}</h3><span className="landing-tech">{tech}</span><p>{text}</p></article>)}</div>
-        <div className="landing-proof"><div className="landing-proof-icon"><Check size={20} /></div><p><strong>A working prototype, with visible boundaries.</strong> Live Jev inference, a real iMessage reply, and conversation activity have been verified. Dara’s rules are implemented; demo counteroffers and settlement figures are explicit assumptions. Real catalog data and seller outreach remain pending.</p><a href={githubHref} target="_blank" rel="noreferrer">Read the source <ArrowUpRight size={16} /></a></div>
+        <div className="landing-proof"><div className="landing-proof-icon"><Check size={20} /></div><p><strong>Working today:</strong> live Jev scoring, a real iMessage reply, and live conversation activity. Dara’s rules run. Counteroffers and final prices in the demo are assumptions. Real catalog data and seller outreach are not connected yet.</p><a href={githubHref} target="_blank" rel="noreferrer">Read the source <ArrowUpRight size={16} /></a></div>
       </section>
 
-      <section className="landing-team landing-shell" id="team"><div><span className="landing-kicker">THREE PEOPLE. ONE WORKFLOW.</span><h2>Built together.</h2></div><div className="landing-team-members"><div><span className="landing-avatar">B</span><p><strong>Ben</strong><span>Integration & product</span></p></div><div><span className="landing-avatar">C</span><p><strong>Chris</strong><span>Data & catalog</span></p></div><div><span className="landing-avatar">D</span><p><strong>Dara</strong><span>Optimization</span></p></div></div></section>
+      <section className="landing-team landing-shell" id="team"><div><span className="landing-kicker">The team</span><h2>Built together.</h2></div><div className="landing-team-members"><div><span className="landing-avatar">B</span><p><strong>Ben</strong><span>Integration & product</span></p></div><div><span className="landing-avatar">C</span><p><strong>Chris</strong><span>Data & catalog</span></p></div><div><span className="landing-avatar">D</span><p><strong>Dara</strong><span>Optimization</span></p></div></div></section>
 
-      <section className="landing-bottom-cta landing-shell"><div><span className="landing-kicker">TAKE THE DRIVER’S SEAT</span><h2>See the decisions behind the shortlist.</h2><p>Explore search, Jev traces, and conversation activity in the team demo.</p></div><Link className="landing-button landing-button-lime" href={demoHref}>Open demo dashboard <ArrowUpRight size={19} /></Link></section>
+      <section className="landing-bottom-cta landing-shell"><div><span className="landing-kicker">Try it</span><h2>See the decisions behind the shortlist.</h2><p>Search, read Jev’s trace, and watch the conversation in the team demo.</p></div><Link className="landing-button landing-button-lime" href={demoHref}>Open demo dashboard <ArrowUpRight size={19} /></Link></section>
     </main>
     <footer className="landing-footer landing-shell"><span>JEVgotiator. Built at JEVathon, San Francisco.</span><a href={githubHref} target="_blank" rel="noreferrer">View on GitHub <ArrowUpRight size={14} /></a></footer>
   </div>;
