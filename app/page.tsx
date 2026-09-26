@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight, ArrowUpRight, Braces, Check, Database, GitBranch, Layers3, MessageCircle, Search, ShieldCheck, SlidersHorizontal, Sparkles, Workflow, Zap } from "lucide-react";
 
 const demoHref = "/dashboard?view=activity";
@@ -47,7 +48,8 @@ function CarIllustration() {
   </svg>;
 }
 
-export default function Page() {
+export default async function Page({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  if ((await searchParams).view === "activity") redirect("/dashboard?view=activity");
   return <div className="landing">
     <header className="landing-header landing-shell">
       <Link href="/" className="landing-brand" aria-label="JEVgotiator home"><span className="landing-brand-mark"><ArrowUpRight size={23} strokeWidth={2.7} /></span>JEVgotiator<span className="landing-brand-dot">.</span></Link>

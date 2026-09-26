@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { briefSchema, optimizationSimulationSchema, daraIntelligenceSchema, type Car, type JevTrace } from "./contracts";
-import type { ActivityResponse } from "./activity-contract";
+import { activityParticipants, type ActivityResponse } from "./activity-contract";
 
 const short = z.string().max(8000);
 const nullableNumber = z.number().finite().nullable();
@@ -29,7 +29,7 @@ const optimizationSchema = z.object({
 });
 const activitySchema = z.object({
   source: z.literal("eve"), status: z.literal("live"), fetched_at: short,
-  conversations: z.array(z.object({ id: z.string().regex(/^wrun_[A-Za-z0-9]{26}$/), title: short, channel: z.enum(["photon", "http", "unknown"]), status: short, updated_at: short })).max(30),
+  conversations: z.array(z.object({ id: z.string().regex(/^wrun_[A-Za-z0-9]{26}$/), title: short, channel: z.enum(["photon", "http", "unknown"]), status: short, updated_at: short, participant_label: z.enum(activityParticipants).optional().catch(undefined) })).max(30),
   selected_id: short.nullable(),
   messages: z.array(z.object({ id: short, role: z.enum(["user", "assistant"]), text: short, created_at: short })).max(100),
   tools: z.array(z.object({ id: short, name: short, status: z.enum(["running", "completed", "failed"]), started_at: short.nullable(), completed_at: short.nullable() })).max(100),

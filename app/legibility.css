@@ -173,3 +173,18 @@ small, time, code { font-size: var(--text-small); }
 .scenario-disclaimer, .intelligence-assumptions p, .intelligence-panel li, .tiny-note, .sidebar-note p { font-size: var(--text-small); line-height: 1.5; }
 .scope-tag { font-size: var(--text-small); }
 .scope-tag small { font-size: var(--text-caption); }
+
+/* Live workbench (live-activity.css) brought up to the same scale. */
+.activity-workspace .activity-work-header h1 { font-size: 40px; letter-spacing: -0.01em; }
+.activity-header-actions .secondary, .activity-header-actions .activity-status, .activity-workspace .activity-toolbar label, .activity-workspace .activity-toolbar select,
+.activity-context-line, .activity-context-line details p, .activity-stage-number, .activity-stage-status, .activity-proof-strip, .activity-proof-strip .data-badge,
+.activity-proof-strip > .text-button, .activity-workspace .section-line .quiet, .activity-history-controls .text-button, .activity-workspace .message-bubble details,
+.activity-workspace .tiny-note, .activity-shortlist-heading > span, .activity-workspace .activity-car small, .activity-workspace .activity-car .number-chip,
+.activity-workspace .activity-results > .primary, .activity-tool-details > summary, .activity-tool-details > p, .activity-workspace .activity-tool strong,
+.activity-compact-plan .data-badge, .activity-workspace .activity-compact-plan > p, .activity-dara-scores > div, .activity-dara-scores small,
+.activity-workspace .activity-plan > summary, .activity-plan > summary > span, .activity-workspace .activity-plan h3, .activity-intelligence-details > summary { font-size: var(--text-small); }
+.activity-stage strong, .activity-shortlist-heading strong, .activity-workspace .activity-car strong, .activity-workspace .activity-empty h3 { font-size: 18px; }
+.activity-stage p, .activity-workspace .message-bubble p, .activity-workspace .activity-empty p, .activity-waiting-work p { font-size: 17px; line-height: 1.5; }
+.activity-workspace .section-line h2 { font-size: 22px; }
+.activity-header-actions .secondary { min-height: 42px; padding: 8px 14px; }
+.activity-context-line, .activity-stage p, .activity-stage-status, .activity-workspace .activity-car small, .activity-dara-scores small { color: var(--muted); }
