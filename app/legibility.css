@@ -225,3 +225,23 @@ input:focus, select:focus { border-color: var(--ink); box-shadow: 0 0 0 4px rgba
 .tiny-line, .landing-eyebrow > span { background: var(--signal); }
 .trace-source, .activity-toolbar > strong, .activity-session-control { font-size: var(--text-small); color: var(--ink); }
 .activity-toolbar > strong { font-size: 18px; }
+
+/* Hero: eyebrow and headline span the full width so the headline sits on one line; copy left, art right. */
+.landing-hero { grid-template-rows: auto auto auto auto 1fr; align-items: start; row-gap: 0; }
+.landing-hero-copy { display: contents; }
+.landing-hero-copy .landing-eyebrow, .landing-hero-copy h1 { grid-column: 1 / -1; }
+.landing-hero-copy h1 { margin: 20px 0 32px; max-width: none; white-space: nowrap; font-size: clamp(40px, 4.4vw, 60px); }
+.landing-hero-copy h1 span { color: var(--ink); }
+.landing-hero-break { display: none; }
+.landing-intro, .landing-actions, .landing-access-note { grid-column: 1; }
+.landing-intro { margin-top: 8px; max-width: 30ch; font-size: 22px; }
+.landing-actions { margin-top: 28px; }
+.landing-access-note { margin-top: 20px; }
+.landing-hero-art { grid-column: 2; grid-row: 3 / span 3; min-height: 400px; }
+@media (max-width: 760px) {
+  .landing-hero { grid-template-columns: 1fr; grid-template-rows: none; }
+  .landing-hero-copy .landing-eyebrow, .landing-hero-copy h1, .landing-intro, .landing-actions, .landing-access-note, .landing-hero-art { grid-column: 1; grid-row: auto; }
+  .landing-hero-copy h1 { white-space: normal; font-size: 40px; }
+  .landing-hero-break { display: inline; }
+  .landing-hero-art { margin-top: 28px; }
+}
