@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { normalizeActivity, readActivity } from "../lib/activity";
+import { conversationsForParticipant } from "../lib/activity-contract";
 
 const id = "wrun_01ABCDEF0123456789ABCDEFGH";
 const sample = {
@@ -20,6 +21,37 @@ test("activity projection strips unknown provider fields and never needs a resul
 
 test("activity projection rejects a selected conversation outside the authorized list", () => {
   assert.throws(() => normalizeActivity({ ...sample, selected_id: "different-session" }));
+});
+
+test("activity preserves allowlisted participant names and keeps older feeds compatible", () => {
+  for (const participant_label of ["Ben", "Chris", "Dara"]) {
+    const output = normalizeActivity({ ...sample, conversations: [{ ...sample.conversations[0], participant_label }] });
+    assert.equal(output.conversations[0].participant_label, participant_label);
+  }
+  assert.equal(normalizeActivity(sample).conversations[0].participant_label, undefined);
+});
+
+test("unmatched participant labels cannot expose arbitrary identities", () => {
+  for (const participant_label of ["private@example.test", "+15550001111", { phone: "private" }, null]) {
+    const output = normalizeActivity({ ...sample, conversations: [{ ...sample.conversations[0], participant_label }] });
+    assert.equal(output.conversations[0].participant_label, undefined);
+    assert.ok(!JSON.stringify(output).includes("private"));
+    assert.ok(!JSON.stringify(output).includes("+15550001111"));
+  }
+});
+
+test("person filters preserve session order and never fall back to another person", () => {
+  const base = normalizeActivity(sample).conversations[0];
+  const conversations = [
+    { ...base, id: "ben-new", participant_label: "Ben" as const },
+    { ...base, id: "chris", participant_label: "Chris" as const },
+    { ...base, id: "ben-old", participant_label: "Ben" as const },
+    { ...base, id: "operator", channel: "http" as const },
+  ];
+  assert.deepEqual(conversationsForParticipant(conversations, "Ben").map(item => item.id), ["ben-new", "ben-old"]);
+  assert.deepEqual(conversationsForParticipant(conversations, "Dara"), []);
+  assert.deepEqual(conversationsForParticipant(conversations, "unknown").map(item => item.id), ["operator"]);
+  assert.deepEqual(conversationsForParticipant(conversations, ""), conversations);
 });
 
 test("unconfigured activity returns an explicit empty state without network access", async () => {

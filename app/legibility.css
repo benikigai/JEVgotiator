@@ -1,0 +1,227 @@
+/* Projector-first type scale and contrast. Loaded last so it wins the cascade. Tokens live in theme.css. */
+
+html { font-size: var(--text); }
+body { font-size: var(--text); line-height: 1.5; font-weight: 500; color: var(--ink); letter-spacing: 0; }
+* { letter-spacing: 0; }
+p { max-width: 70ch; line-height: 1.5; }
+h1, h2, h3 { line-height: 1.2; }
+h1 { font-size: 48px; font-weight: 700; letter-spacing: -0.01em; max-width: 24ch; }
+h1 span, h1 em, .landing h1 span { font-weight: 600; }
+h2 { font-size: 28px; font-weight: 700; }
+h3 { font-size: 20px; font-weight: 700; }
+.compact h1 { font-size: 40px; }
+label, input, select, textarea, button { font-size: var(--text-small); font-weight: 500; }
+input, select { color: var(--ink); }
+small, time, code { font-size: var(--text-small); }
+
+/* Every secondary-text color in the app collapses to one legible grey. */
+.quiet, .eyebrow, .tiny-note, .page-heading p, .results-heading p, .inventory-intro p, .car-title p, .car-specs, .reasons > span,
+.source-footnote, .data-notes, .breadcrumb, .location-pill, .search-box-heading .quiet, .prompt-chips button, .pipeline-time,
+.deal-banner p, .next-step p, .empty-state p, .timeline-item p, .question-list li, .opening-message p, .quote-row p, .quote-row small,
+.connection-card p, .integration-note p, .factor p, .factor span, .modal-body > p, .unknown-list, .trace-description, .trace-stages p,
+.trace-meta, .trace-table small, .trace-criteria p, .trace-formula small, .trace-question > code, .activity-connect p, .activity-tool small,
+.activity-counts span, .activity-car small, .activity-empty, .activity-empty-note, .activity-plan ul, .intelligence-method,
+.intelligence-signals > div, .intelligence-panel details, .scenario-table td small, .scenario-action p, .login-card > p, .login-note,
+.landing-intro, .landing-access-note, .landing-stats p, .landing-section-heading > p, .landing-flow p, .landing-flow-top span,
+.landing-principles p, .landing-tech, .landing-stack-card p, .landing-team-members p span, .landing-footer, .landing-eyebrow, .landing-kicker,
+.landing-principle-number, .landing-nav, .brand-small, .workspace-label, .sidebar-note p, .sidebar-footer small {
+  color: var(--muted);
+  font-size: var(--text-small);
+  font-weight: 500;
+  text-transform: none;
+}
+.eyebrow, .landing-eyebrow, .landing-kicker, .landing-principle-number, .workspace-label, .rank-label, .status-label, .scenario-badge, .trace-table th { font-size: var(--text-caption); font-weight: 700; }
+.page-heading p, .results-heading p, .inventory-intro p, .deal-banner p, .next-step p, .empty-state p, .question-list li, .opening-message p,
+.connection-card p, .integration-note p, .modal-body > p, .intelligence-method, .landing-section-heading > p, .landing-principles p, .landing-stack-card p,
+.activity-empty p, .trace-description, .trace-stages p, .notice, .error, .loading-strip { font-size: var(--text); }
+.page-heading p { margin-top: 14px; }
+
+/* Text on dark surfaces. */
+.sidebar, .sidebar nav button, .sidebar-note strong { color: #f5f5f7; }
+.sidebar nav button { font-size: var(--text-small); }
+.sidebar nav button.active { color: var(--ink); }
+.pipeline > div:not(.pipeline-time) { font-size: 16px; }
+.trace-invitation > div { font-size: var(--text); color: var(--ink); }
+.landing-art-bottom { padding-bottom: 70px; }
+.brand-small, .workspace-label, .sidebar-note p, .sidebar-footer small, .scope-tag small, .trace-stage-jev .eyebrow, .trace-stage-jev p,
+.landing-flow-jev p, .landing-flow-jev .landing-flow-top span, .landing-bottom-cta p, .landing-bottom-cta .landing-kicker, .login-art > p, .login-location,
+.pipeline > div:not(.pipeline-time), .pipeline > svg, .pipeline-time, .message-bubble.user, .message-bubble.user time { color: var(--muted-dark-bg); }
+.pipeline > div > span:first-child { font-size: 28px; }
+.message-bubble.user p, .message-bubble.user strong { color: #fff; }
+.scope-tag { background: var(--ink); color: #fff; }
+
+/* Badges, chips, and buttons. */
+.number-chip, .data-badge, .match-pill, .mode-pill, .image-note, .status-label, .scenario-badge, .activity-status, .nav-count, .selection-bar strong,
+.select-button, .text-button, .trace-constraints span, .trace-table, .trace-table button, .scenario-table, .scenario-table th, .timeline-item strong,
+.activity-tool strong, .activity-car strong, .intelligence-candidate h3, .intelligence-signals strong, .scenario-action strong, .quote-row strong,
+.deal-banner strong, .search-box-heading strong, .checks label, .approval, .results-heading select, .factor > div { font-size: var(--text-small); font-weight: 600; }
+.primary, .secondary, .subtle-button, .landing-button, .landing-text-link, .landing-github { font-size: var(--text-small); font-weight: 600; min-height: 46px; }
+.primary.wide, .login-card .primary { font-size: 16px; }
+.search-box textarea { font-size: 20px; line-height: 1.5; min-height: 110px; }
+.prompt-chips button { padding: 9px 12px; color: var(--ink); background: #fff; border-color: #c9c9d1; }
+.select-button { padding: 10px 14px; }
+.text-button { color: var(--ink); }
+
+/* Text over photos or illustrations gets a solid backing. */
+.image-note, .mode-pill, .rank-label { background: #fff; color: var(--ink); padding: 5px 9px; border-radius: 6px; }
+.match-pill { background: var(--ink); color: #fff; }
+.landing-art-bottom > span, .landing-illustration-label, .landing-art-top { background: var(--ink); color: #fff; padding: 8px 12px; border-radius: 8px; backdrop-filter: none; }
+.landing-art-top { font-size: var(--text-caption); font-weight: 600; margin: 24px 24px 0; padding: 0; background: none; display: flex; gap: 12px; }
+.landing-art-top > span:first-child { background: var(--ink); color: #fff; padding: 8px 12px; border-radius: 8px; }
+.landing-art-chip { font-size: var(--text-caption); font-weight: 700; }
+.landing-illustration-label { font-size: var(--text-caption); }
+.landing-art-bottom > span { font-size: 24px; line-height: 1.3; }
+
+/* Cards. */
+.car-title h3 { font-size: 20px; }
+.car-title > strong { font-size: 22px; }
+.car-title p, .car-specs, .reasons > span { font-size: 16px; }
+.reasons > span { line-height: 1.45; }
+.card-footer button { font-size: var(--text-small); }
+.results-heading h2, .inventory-intro h2 { font-size: 28px; }
+.results-heading h2 > span { font-size: var(--text-small); padding: 4px 10px; }
+.trace-stages h2 { font-size: 36px; }
+.trace-stages strong, .activity-connect strong, .deal-plan .section-line h2, .intelligence-panel .section-line h2 { font-size: 22px; }
+.activity-counts strong, .intelligence-candidate-top > strong { font-size: 30px; }
+.trace-formula p { font-size: 18px; }
+.message-bubble p, .activity-plan p, .activity-plan li, .activity-plan summary, .activity-results > p { font-size: 17px; line-height: 1.5; }
+.message-bubble > div { font-size: var(--text-small); }
+.section-line h2 { font-size: 22px; }
+.deal-timeline h3 { font-size: 20px; }
+.timeline-item > span, .scenario-action > span { width: 28px; height: 28px; font-size: 14px; }
+.brief-grid { gap: 20px; }
+.connection-card code { font-size: var(--text-small); color: var(--ink); }
+
+/* Login. */
+.login-art h1 { font-size: 56px; letter-spacing: -0.01em; line-height: 1.1; }
+.login-card h2 { font-size: 34px; }
+.login-card input { font-size: 18px; }
+
+/* Landing. */
+.landing h1 { font-size: 56px; line-height: 1.1; letter-spacing: -0.01em; }
+.landing h2 { font-size: 40px; letter-spacing: -0.01em; line-height: 1.15; }
+.landing-intro { font-size: 20px; line-height: 1.5; max-width: 34ch; }
+.landing-nav { font-size: 16px; color: var(--ink); }
+.landing-flow h3, .landing-principles h3, .landing-stack-card h3 { font-size: 20px; }
+.landing-flow li { padding: 20px 18px 22px; }
+.landing-flow h3 { font-size: 18px; }
+.landing-flow-jev h3 { color: #fff; }
+.landing-flow p { font-size: var(--text-small); margin-top: 6px; }
+.landing-stats strong { font-size: 36px; }
+.landing-stats strong span { font-size: 18px; font-weight: 500; color: var(--muted); }
+.landing-proof p { font-size: var(--text); color: #fff; }
+.landing-proof strong { color: #fff; }
+.landing-proof > a { font-size: var(--text-small); font-weight: 600; }
+.landing-bottom-cta h2 { font-size: 36px; }
+.landing-team-members strong { font-size: 18px; }
+.landing-avatar { font-size: 18px; font-weight: 700; }
+.landing-principle-number { color: var(--muted); }
+.landing-hero-copy p { max-width: 34ch; }
+
+@media (max-width: 1200px) {
+  h1, .landing h1 { font-size: 44px; }
+  .compact h1 { font-size: 36px; }
+  .landing h2 { font-size: 34px; }
+}
+@media (max-width: 800px) {
+  html, body { font-size: 17px; }
+  h1, .landing h1, .login-art h1 { font-size: 38px; }
+  .compact h1 { font-size: 32px; }
+  .search-box textarea { font-size: 18px; }
+}
+
+/* Pipeline flow diagram. */
+.flow { list-style: none; margin: 28px 0 20px; padding: 20px 24px; display: flex; align-items: stretch; gap: 0; background: var(--ink); border-radius: 16px; color: #fff; flex-wrap: wrap; }
+.flow-stage { position: relative; flex: 1 1 0; min-width: 140px; display: flex; flex-direction: column; gap: 4px; padding: 14px 40px 14px 16px; border-radius: 12px; }
+.flow-stage.active { background: #c8ff4a; color: var(--ink); }
+.flow-stage.pending { color: #8e8e98; }
+.flow-label { font-size: var(--text-caption); font-weight: 700; }
+.flow-stage.pending .flow-label, .flow-stage.pending .flow-note { color: #8e8e98; }
+.flow-stage.done .flow-label, .flow-stage.done .flow-note { color: var(--muted-dark-bg); }
+.flow-value { font-family: Manrope, var(--font); font-size: 34px; font-weight: 800; line-height: 1.1; }
+.flow-stage.pending .flow-value { color: #8e8e98; }
+.flow-note { font-size: var(--text-small); font-weight: 500; }
+.flow-arrow { position: absolute; right: 8px; top: 50%; height: 28px; width: 14px; transform: translateY(-50%); color: #4a4a52; }
+.flow-stage.active .flow-arrow { color: var(--ink); }
+.flow-stage.done .flow-arrow { color: #c8ff4a; }
+.flow-meta { flex: 1 1 100%; padding: 12px 16px 0; color: var(--muted-dark-bg); font-size: var(--text-small); border-top: 1px solid #2a2a30; margin-top: 12px; }
+@media (max-width: 1200px) { .flow-stage { min-width: 30%; } .flow-arrow { display: none; } }
+
+/* Card score bar. */
+.score-bar { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; margin-top: 14px; font-size: var(--text-small); font-weight: 600; color: var(--muted); }
+.score-bar > div { height: 8px; border-radius: 4px; background: #e3e3e8; overflow: hidden; }
+.score-bar i { display: block; height: 100%; background: var(--ink); border-radius: 4px; }
+.score-bar strong { font-size: 18px; color: var(--ink); min-width: 2ch; text-align: right; }
+
+/* Negotiation timeline. */
+.negotiation { display: grid; gap: 18px; margin: 24px 0; }
+.negotiation-row { padding: 18px 20px 8px; border: 1px solid #e3e3e8; border-radius: 14px; background: #fff; color: var(--ink); }
+.negotiation-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 4px; }
+.negotiation-head strong { font-size: 20px; }
+.negotiation-head span { font-size: var(--text-small); color: var(--muted); font-weight: 600; }
+.negotiation-chart { width: 100%; max-width: 860px; height: auto; display: block; }
+.negotiation-price { font: 700 17px Manrope, var(--font); fill: var(--ink); }
+.negotiation-step { font: 600 14px var(--font); fill: var(--muted); }
+.scenario-disclaimer, .intelligence-assumptions p, .intelligence-panel li, .tiny-note, .sidebar-note p { font-size: var(--text-small); line-height: 1.5; }
+.scope-tag { font-size: var(--text-small); }
+.scope-tag small { font-size: var(--text-caption); }
+
+/* Live workbench (live-activity.css) brought up to the same scale. */
+.activity-workspace .activity-work-header h1 { font-size: 40px; letter-spacing: -0.01em; }
+.activity-header-actions .secondary, .activity-header-actions .activity-status, .activity-workspace .activity-toolbar label, .activity-workspace .activity-toolbar select,
+.activity-context-line, .activity-context-line details p, .activity-stage-number, .activity-stage-status, .activity-proof-strip, .activity-proof-strip .data-badge,
+.activity-proof-strip > .text-button, .activity-workspace .section-line .quiet, .activity-history-controls .text-button, .activity-workspace .message-bubble details,
+.activity-workspace .tiny-note, .activity-shortlist-heading > span, .activity-workspace .activity-car small, .activity-workspace .activity-car .number-chip,
+.activity-workspace .activity-results > .primary, .activity-tool-details > summary, .activity-tool-details > p, .activity-workspace .activity-tool strong,
+.activity-compact-plan .data-badge, .activity-workspace .activity-compact-plan > p, .activity-dara-scores > div, .activity-dara-scores small,
+.activity-workspace .activity-plan > summary, .activity-plan > summary > span, .activity-workspace .activity-plan h3, .activity-intelligence-details > summary { font-size: var(--text-small); }
+.activity-stage strong, .activity-shortlist-heading strong, .activity-workspace .activity-car strong, .activity-workspace .activity-empty h3 { font-size: 18px; }
+.activity-stage p, .activity-workspace .message-bubble p, .activity-workspace .activity-empty p, .activity-waiting-work p { font-size: 17px; line-height: 1.5; }
+.activity-workspace .section-line h2 { font-size: 22px; }
+.activity-header-actions .secondary { min-height: 42px; padding: 8px 14px; }
+.activity-context-line, .activity-stage p, .activity-stage-status, .activity-workspace .activity-car small, .activity-dara-scores small { color: var(--muted); }
+
+/* Dashboard chrome matches the landing header: light surface, hairline border, black mark with lime arrow. */
+body { background: var(--bg); }
+.sidebar { background: var(--paper); box-shadow: none; border-right: 1px solid var(--line); color: var(--ink); }
+.sidebar, .sidebar nav button, .sidebar-note strong { color: var(--ink); }
+.brand, .landing-brand { font-family: var(--font-display); font-weight: 800; font-size: 24px; }
+.brand-mark, .landing-brand-mark, .login-art .brand-mark { background: var(--ink); color: var(--accent); border-radius: 50%; }
+.brand-small, .workspace-label, .sidebar-note p, .sidebar-footer small { color: var(--muted); }
+.sidebar nav button { color: var(--ink); border-radius: var(--radius-pill); padding: 12px 16px; }
+.sidebar nav button:hover { background: var(--surface); color: var(--ink); }
+.sidebar nav button.active { background: var(--ink); color: #fff; }
+.nav-count { background: var(--accent); color: var(--ink); }
+.sidebar-note { border-top-color: var(--line); }
+.sidebar-note .mini-icon { background: var(--ink); color: var(--accent); }
+.sidebar-footer { border-top-color: var(--line); }
+.avatar, .top-avatar, .landing-avatar { background: var(--ink); color: #fff; }
+.online-dot { background: var(--accent); box-shadow: 0 0 0 3px var(--paper); border: 1px solid var(--ink); }
+.topbar { background: var(--paper); backdrop-filter: none; border-bottom: 1px solid var(--line); height: 88px; }
+.location-pill, .landing-github { border: 1px solid var(--line-strong); border-radius: var(--radius-pill); color: var(--ink); }
+.login-page { background: var(--bg); }
+.login-art { background: var(--ink); }
+.login-art::after { display: none; }
+.login-art h1 em { color: var(--accent); }
+
+/* Shared surfaces and controls. */
+.search-box, .brief-panel, .car-card, .deal-plan, .deal-timeline, .connection-card, .trace-stages section, .trace-section, .activity-messages, .activity-tools,
+.activity-results, .intelligence-panel, .negotiation-row, .landing-stack-card, .landing-flow li, .empty-state, .detail-modal { border-radius: var(--radius-card); border: 1px solid var(--line); box-shadow: var(--shadow-card); background: var(--paper); }
+.car-card:hover, .connection-card:hover, .landing-stack-card:hover { box-shadow: var(--shadow-raised); }
+.car-card.selected { border: 2px solid var(--ink); }
+.trace-invitation, .deal-banner, .next-step, .integration-note, .brief-panel, .landing-architecture { background: var(--surface); }
+.brief-panel { box-shadow: none; }
+input, select, textarea { border-radius: var(--radius-control); border-color: var(--line-strong); }
+input:focus, select:focus { border-color: var(--ink); box-shadow: 0 0 0 4px rgba(17, 17, 20, 0.12); }
+.primary, .secondary, .subtle-button, .landing-button, .select-button, .prompt-chips button { border-radius: var(--radius-pill); }
+.primary, .landing-button-dark { background: var(--ink); color: #fff; }
+.primary:hover, .landing-button-dark:hover { background: var(--ink-soft); }
+.subtle-button, .landing-button-lime, .select-button.chosen { background: var(--accent); color: var(--ink); }
+.select-button.chosen:hover, .subtle-button:hover, .landing-button-lime:hover { background: var(--accent-hover); }
+.secondary { border: 1px solid var(--line-strong); color: var(--ink); background: var(--paper); }
+.secondary:hover { background: var(--surface); }
+.data-badge { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.flow, .trace-stages .trace-stage-jev, .landing-flow .landing-flow-jev, .landing-proof, .landing-bottom-cta, .scope-tag, .pipeline { background: var(--ink); color: #fff; border-radius: var(--radius-card); }
+.tiny-line, .landing-eyebrow > span { background: var(--signal); }
+.trace-source, .activity-toolbar > strong, .activity-session-control { font-size: var(--text-small); color: var(--ink); }
+.activity-toolbar > strong { font-size: 18px; }

@@ -4,6 +4,8 @@
 
 Dara's default weights are value 26, evidence 23, road trip 18, model fit 8, and mileage/year/battery 25. The evidence composite weights photo coverage 55%, title records 25%, and the neutral battery baseline 20%. Price, mileage, model, year, photos, and title map from the canonical car contract. Missing VIN receives no credit. Unknown battery remains Dara's 50 baseline and is explicitly labeled unknown. The original model-based social score is called model fit because no personal social profile is supplied. All cars still require inspection.
 
+The social profile in the source branch is a fictional Maya Rivera fixture with preset lifestyle tags. Its API assigns a model-based social score; it does not connect to Instagram, authenticate a social account, import a public profile, or analyze a buyer. No live social personalization is implemented here.
+
 The branch contains a MarketCheck inventory adapter but no negotiation or contact implementation. This integration makes no MarketCheck request and adds no credential or dependency.
 
 For selections consisting entirely of priced synthetic listings, the plan also contains a separate `synthetic_scenario`: opening offer at 92% of asking, assumed counter at 98%, assumed settlement at 95%. These are disclosed demo rules we added, not Dara's market valuation or predicted seller behavior. Candidate order follows Dara's intelligence score. Savings exclude taxes and fees; out-the-door budget fit remains unverified.

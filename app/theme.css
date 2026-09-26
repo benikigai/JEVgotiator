@@ -1,0 +1,35 @@
+/* One visual system for the landing page and the dashboard. Source of truth for color, type, radius and spacing. */
+:root {
+  --bg: #fbfbfd;
+  --paper: #ffffff;
+  --surface: #f1f1f4;
+  --ink: #111114;
+  --ink-soft: #202024;
+  --muted: #3f3f46;
+  --muted-dark-bg: #c9c9d1;
+  --line: #e5e5ea;
+  --line-strong: #d9d9df;
+  --accent: #c8ff4a;
+  --accent-hover: #d7ff7c;
+  --signal: #ff5e3a;
+  --nav: var(--paper);
+
+  --font: 'DM Sans', Arial, sans-serif;
+  --font-display: 'Manrope', var(--font);
+  --text: 18px;
+  --text-small: 15px;
+  --text-caption: 14px;
+  --h1: 56px;
+  --h2: 40px;
+  --h3: 20px;
+
+  --radius-card: 16px;
+  --radius-control: 10px;
+  --radius-pill: 999px;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 40px;
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.045);
+  --shadow-raised: 0 14px 32px rgba(0, 0, 0, 0.07);
+}

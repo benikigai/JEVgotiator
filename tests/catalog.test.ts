@@ -128,3 +128,34 @@ test("catalog follows explicit pagination and retains every record before filter
     if (originalUrl === undefined) delete process.env.CATALOG_API_URL; else process.env.CATALOG_API_URL = originalUrl;
   }
 });
+
+test("MarketCheck adapter keeps live provenance and requires physical inspection", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalCatalog = process.env.CATALOG_API_URL;
+  const originalMarketcheck = process.env.MARKETCHECK_API_KEY;
+  delete process.env.CATALOG_API_URL;
+  process.env.MARKETCHECK_API_KEY = "test-marketcheck-key";
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    assert.equal(url.hostname, "api.marketcheck.com");
+    assert.equal(url.searchParams.get("city"), "San Francisco");
+    assert.equal(url.searchParams.get("rows"), "50");
+    return Response.json({ num_found: 2, listings: [{ id: "mc-1", price: 31000, miles: 35000, vdp_url: "https://dealer.example/car", carfax_clean_title: true,
+      build: { make: "Tesla", model: "Model Y", year: 2022, exterior_color: "Black" },
+      dealer: { id: "dealer-1", name: "Test dealer", city: "San Francisco" }, media: { photo_links: ["https://dealer.example/photo.jpg"] } }] });
+  };
+  try {
+    const result = await loadCatalog();
+    assert.equal(result.mode, "live");
+    assert.equal(result.cars.length, 1);
+    assert.equal(result.cars[0].mode, "live");
+    assert.equal(result.cars[0].listing_url, "https://dealer.example/car");
+    assert.equal(result.cars[0].photos.length, 1);
+    assert.match(result.warnings.join(" "), /INSPECT every live car/);
+    assert.equal(filterCars(result.cars, { ...brief, budget: 35000, model: "Model Y", color: "black" }).eligible.length, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalCatalog === undefined) delete process.env.CATALOG_API_URL; else process.env.CATALOG_API_URL = originalCatalog;
+    if (originalMarketcheck === undefined) delete process.env.MARKETCHECK_API_KEY; else process.env.MARKETCHECK_API_KEY = originalMarketcheck;
+  }
+});

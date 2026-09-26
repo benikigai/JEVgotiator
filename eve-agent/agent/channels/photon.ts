@@ -3,6 +3,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import type { RouteHandlerArgs, Session } from "eve/channels";
 import type { ChatSdkChannelState } from "eve/channels/chat-sdk";
 import { defaultPhotonAuth, photonIMessageChannel } from "eve/channels/photon";
+import { saveParticipantLabel } from "../lib/participants";
 
 const webhookContext = new AsyncLocalStorage<RouteHandlerArgs<ChatSdkChannelState>>();
 type ResettableSession = Pick<Session, "id" | "reset" | "getEventStream">;
@@ -52,6 +53,14 @@ const channel = photonIMessageChannel({
   },
   webhookSecret: process.env.IMESSAGE_WEBHOOK_SECRET,
   turnPolicy: "queue",
+  events: {
+    async "turn.completed"(_event, _channel, context) {
+      const auth = context.session.auth.initiator;
+      if (auth?.authenticator === "photon-imessage" && auth.issuer === "photon") {
+        await saveParticipantLabel(context.session.id, auth.principalId);
+      }
+    },
+  },
   async onMessage({ thread }, message) {
     if (/^\/(?:reset|new)$/i.test(message.text.trim())) {
       const route = webhookContext.getStore();
@@ -62,7 +71,14 @@ const channel = photonIMessageChannel({
       });
       return null;
     }
-    return { auth: defaultPhotonAuth(message) };
+    const auth = defaultPhotonAuth(message);
+    try {
+      const session = await webhookContext.getStore()?.resolveSession(thread.id);
+      if (session) await saveParticipantLabel(session.id, auth.principalId);
+    } catch {
+      console.warn("Participant session lookup was unavailable.");
+    }
+    return { auth };
   },
 });
 
