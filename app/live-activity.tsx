@@ -5,7 +5,6 @@ import { ArrowDown, ArrowUpRight, CheckCircle2, Clock3, LoaderCircle, MessageSqu
 import type { ActivityResponse } from "@/lib/activity-contract";
 import DecisionTrace from "./decision-trace";
 import DealIntelligence from "./deal-intelligence";
-import "./live-activity.css";
 
 const dollars = (value: number | null) => value === null ? "Price unknown" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
 const time = (value: string | null | undefined) => value ? new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "";
@@ -88,7 +87,7 @@ export default function LiveActivity() {
   if (showTrace && search) return <DecisionTrace result={search} onBack={() => setShowTrace(false)} source={selected ? { label: `${selected.participant_label ?? "Unidentified"} · ${channel}`, sessionId: selected.id } : undefined}/>;
 
   return <div className="activity-workspace">
-    <header className="activity-work-header"><div><span className="eyebrow">OBSERVED CONVERSATION ACTIVITY</span><h1>Live workbench</h1></div><div className="activity-header-actions"><span className={`activity-status ${data?.status === "live" && !error ? "connected" : ""}`}><Radio size={12}/>{error ? "Interrupted" : data?.status === "live" ? "Live · 3s refresh" : data?.status === "unconfigured" ? "Not configured" : data?.status === "unavailable" ? "Eve unavailable" : "Connecting…"}</span><button className="secondary" onClick={() => setRefresh(value => value + 1)} aria-label="Refresh activity"><RefreshCw size={14}/><span>Refresh</span></button></div></header>
+    <header className="activity-work-header"><div><span className="eyebrow">Observed conversation activity</span><h1>Live workbench</h1></div><div className="activity-header-actions"><span className={`activity-status ${data?.status === "live" && !error ? "connected" : ""}`}><Radio size={12}/>{error ? "Interrupted" : data?.status === "live" ? "Live · 3s refresh" : data?.status === "unconfigured" ? "Not configured" : data?.status === "unavailable" ? "Eve unavailable" : "Connecting…"}</span><button className="secondary" onClick={() => setRefresh(value => value + 1)} aria-label="Refresh activity"><RefreshCw size={14}/><span>Refresh</span></button></div></header>
     <div className="activity-toolbar"><strong>Chris’s demo phone</strong><label className="activity-session-control">Conversation<select value={conversation} onChange={event => { setConversation(event.target.value); setShowTrace(false); }}><option value="">Follow latest Chris iMessage</option>{conversations.map(item => <option key={item.id} value={item.id}>{item.title} · {item.id.slice(-8)}</option>)}</select></label></div>
     <div className="activity-context-line"><span>{selected ? `Chris · ${channel} · session ${selected.id.slice(-8)} · ${selected.status}` : "Waiting for a fresh text from Chris’s phone"}{data?.fetched_at && ` · ${time(data.fetched_at)}`}</span><details><summary>Messaging & reset</summary><p>On Chris’s registered phone, text /reset to Eve, then send a Tesla request. This view shows new Chris iMessage sessions only. Earlier records remain saved outside the demo view.</p></details></div>
     {error && <div className="notice" role="alert">{error} {data && "Last received activity shown."}</div>}
