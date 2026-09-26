@@ -9,7 +9,7 @@ from api.models import (
     SelectRequest,
 )
 
-app = FastAPI(title="JEVcar", version="0.1.0")
+app = FastAPI(title="JEVgotiator", version="0.1.0")
 
 
 def not_implemented(owner: str) -> HTTPException:
