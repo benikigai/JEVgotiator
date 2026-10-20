@@ -4,17 +4,19 @@ import { z } from "zod";
 import type { Brief, RankedCar } from "@/lib/contracts";
 import { createOptimization, dispatchOptimization, getOptimizationStatus, OptimizationDispatchError } from "@/lib/optimization";
 import { loadCatalog } from "@/lib/catalog";
-import { apiError, jsonBody, seal, session, unseal } from "@/lib/security";
+import { apiError, jsonBody, seal, session, sessionInfo, unseal } from "@/lib/security";
 export const maxDuration = 25;
 const schema = z.object({ result_token: z.string().max(150000), listing_ids: z.array(z.string()).min(1).max(3), action: z.enum(["plan", "contact"]).default("plan"), contact_approved: z.boolean().default(false) });
 export async function POST(request: Request) {
   try {
-    const owner = session(request);
+    const { id: owner, tier } = sessionInfo(request);
     const input = schema.parse(await jsonBody(request));
     if (new Set(input.listing_ids).size !== input.listing_ids.length) throw new Error("Choose distinct cars.");
     const context = unseal<{ id: string; brief: Brief; results: RankedCar[] }>(input.result_token, "result", owner);
     const selected = input.listing_ids.map(id => { const result = context.results.find(r => r.listing.id === id); if (!result) throw new Error("Choose cars from this search result."); return result.listing; });
     if (input.action === "plan") return NextResponse.json(createOptimization(selected, context.brief));
+    // Real seller contact is team-only; public demo sessions can only plan.
+    if (tier !== "team") throw new Error("Seller contact is reserved for the team. The planning handoff is available.");
     if (!input.contact_approved) throw new Error("Approve the contact scope before dispatch.");
     if (process.env.OUTBOUND_CONTACT_ENABLED !== "true") throw new Error("Seller contact is not enabled. The planning handoff is available.");
     if (selected.some(car => car.mode !== "live")) throw new Error("Synthetic or replay listings cannot be contacted.");

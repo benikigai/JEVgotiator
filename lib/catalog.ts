@@ -130,8 +130,10 @@ async function marketcheckRecords(): Promise<{ records: unknown[]; total: number
   return result;
 }
 
-export async function loadCatalog(): Promise<Catalog> {
-  const configured = process.env.CATALOG_API_URL?.trim();
+/** syntheticOnly: public demo sessions always use the bundled synthetic catalog (no external or paid inventory calls). */
+export async function loadCatalog(options: { syntheticOnly?: boolean } = {}): Promise<Catalog> {
+  const configured = options.syntheticOnly ? undefined : process.env.CATALOG_API_URL?.trim();
+  const marketcheck = !options.syntheticOnly && Boolean(process.env.MARKETCHECK_API_KEY);
   const warnings: string[] = [];
   let records: unknown[] = [];
   let source = "Bundled synthetic Tesla demonstration catalog";
@@ -170,7 +172,7 @@ export async function loadCatalog(): Promise<Catalog> {
       if (error instanceof TypeError) throw new Error("Catalog API could not be reached. Check the configured endpoint; synthetic inventory was not substituted.");
       throw error;
     }
-  } else if (process.env.MARKETCHECK_API_KEY) {
+  } else if (marketcheck) {
     const live = await marketcheckRecords();
     records = live.records;
     source = "MarketCheck active used-Tesla dealer search, San Francisco, CA";
@@ -198,7 +200,7 @@ export async function loadCatalog(): Promise<Catalog> {
   if (cars.some((car) => !car.observed_at)) warnings.push("Some records have no observation timestamp. Inventory freshness is unverified.");
   if (cars.some((car) => car.mode === "replay")) warnings.push("Some records lack recognized live provenance and are labeled replay. Seller availability has not been independently verified.");
   const modes = new Set(cars.map((car) => car.mode));
-  const mode: Catalog["mode"] = modes.size === 1 && modes.has("live") ? "live" : modes.size === 1 && modes.has("synthetic") ? "synthetic" : !configured && !process.env.MARKETCHECK_API_KEY ? "synthetic" : "mixed";
+  const mode: Catalog["mode"] = modes.size === 1 && modes.has("live") ? "live" : modes.size === 1 && modes.has("synthetic") ? "synthetic" : !configured && !marketcheck ? "synthetic" : "mixed";
   return { cars, mode, source, fetched_at: new Date().toISOString(), warnings };
 }
 
