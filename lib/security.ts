@@ -28,12 +28,39 @@ export function unseal<T>(token: string, purpose: string, session?: string): T {
 export function matches(value: string, expected: string) {
   return timingSafeEqual(createHash("sha256").update(value).digest(), createHash("sha256").update(expected).digest());
 }
-export function session(request: Request) {
+export type SessionTier = "team" | "public";
+export type SessionInfo = { id: string; tier: SessionTier };
+type SessionToken = { id: string; tier: SessionTier; code?: string };
+// Fingerprint of the configured team code, so rotating DEMO_ACCESS_CODE revokes earlier team sessions.
+function codeFingerprint() {
+  const code = process.env.DEMO_ACCESS_CODE;
+  return code ? createHash("sha256").update(`jvg-team:${code}`).digest("base64url").slice(0, 22) : "";
+}
+// Local development without a configured code keeps the live team view.
+function developmentTeam() {
+  return process.env.NODE_ENV !== "production" && !process.env.DEMO_ACCESS_CODE;
+}
+/** Team only for the correct DEMO_ACCESS_CODE (constant-time); everyone else gets a public session. */
+export function tierForCode(supplied: unknown): SessionTier {
+  const code = process.env.DEMO_ACCESS_CODE;
+  if (code) return typeof supplied === "string" && supplied.length > 0 && matches(supplied, code) ? "team" : "public";
+  return developmentTeam() ? "team" : "public";
+}
+export function sessionInfo(request: Request): SessionInfo {
   const bearer = request.headers.get("authorization")?.replace(/^Bearer /i, "");
-  if (bearer && process.env.INTEGRATION_API_KEY && matches(bearer, process.env.INTEGRATION_API_KEY)) return "integration-client";
+  // Trusted server-to-server clients (the Eve agent) hold a secret key and keep full access.
+  if (bearer && process.env.INTEGRATION_API_KEY && matches(bearer, process.env.INTEGRATION_API_KEY)) return { id: "integration-client", tier: "team" };
   const token = request.headers.get("cookie")?.split(";").map(x => x.trim()).find(x => x.startsWith("jvg_session="))?.slice(12);
   if (!token) throw new Error("Sign in with the team demo code to continue.");
-  return unseal<string>(token, "session");
+  const value = unseal<string | SessionToken>(token, "session");
+  // Tokens issued before tiers existed carry only the session ID and are public.
+  if (typeof value === "string") return { id: value, tier: developmentTeam() ? "team" : "public" };
+  if (!value || typeof value.id !== "string") throw new Error("This result expired or belongs to another session. Run the search again.");
+  const team = developmentTeam() || (value.tier === "team" && Boolean(value.code) && value.code === codeFingerprint());
+  return { id: value.id, tier: team ? "team" : "public" };
+}
+export function session(request: Request) {
+  return sessionInfo(request).id;
 }
 export function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
@@ -48,10 +75,11 @@ export async function jsonBody(request: Request) {
   if (raw.length > 160000) throw new Error("Request is too large.");
   return JSON.parse(raw);
 }
-export function signInResponse(request: Request) {
+export function signInResponse(request: Request, tier: SessionTier = "public") {
   const id = randomUUID();
-  const response = NextResponse.json({ authenticated: true });
-  response.cookies.set("jvg_session", seal(id, "session", id, 86400), { httpOnly: true, secure: process.env.NODE_ENV === "production" || new URL(request.url).protocol === "https:", sameSite: "lax", path: "/", maxAge: 86400 });
+  const response = NextResponse.json({ authenticated: true, tier });
+  const value: SessionToken = tier === "team" ? { id, tier, code: codeFingerprint() } : { id, tier };
+  response.cookies.set("jvg_session", seal(value, "session", id, 86400), { httpOnly: true, secure: process.env.NODE_ENV === "production" || new URL(request.url).protocol === "https:", sameSite: "lax", path: "/", maxAge: 86400 });
   return response;
 }
 export function apiError(error: unknown, status = 400) {

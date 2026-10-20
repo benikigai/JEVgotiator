@@ -92,11 +92,39 @@ npm test
 npm run typecheck
 npm run build && npm start
 npm run seed:catalog # regenerate data/catalog.json
+npm run seed:demo-activity # regenerate data/demo-activity.json (offline, synthetic)
 ```
 
 Local development works without any provider credentials: synthetic inventory,
 guided brief extraction, unscored search, and local deal planning. The dev
-launcher creates a temporary session secret.
+launcher creates a temporary session secret. With no `DEMO_ACCESS_CODE` set,
+local development sessions are team sessions, so the Activity view reads the
+live Eve feed when `EVE_AGENT_URL`/`EVE_API_KEY` are set.
+
+## Public demo
+
+Anyone can open the dashboard and try it. Visitors without the team code get a
+**public** session:
+
+- **Activity view** shows a recorded demo run (`data/demo-activity.json`):
+  three fictional buyers texting Eve about a used Tesla, Eve clarifying, the
+  search with Jev-ranked candidates from the synthetic catalog, the three tool
+  calls, and a deal plan with opening messages. A banner says it is synthetic,
+  and a Replay button plays the run step by step. Jev's answers in the replay
+  are deterministic offline stand-ins, not a live model call.
+- **Find a Tesla / Deal room** work as before against the bundled synthetic
+  catalog (Jev ranking still runs when `TYPESAFE_API_KEY` is set).
+- Public sessions never read the live Eve feed (no fallback), never use an
+  external or MarketCheck catalog, never call the clarify model
+  (`AI_GATEWAY_API_KEY`), and cannot request seller contact.
+
+Entering the correct `DEMO_ACCESS_CODE` (on the sign-in screen or from the
+replay banner's "Enter team access code") gives a **team** session with the
+live Activity feed and configured providers. The tier is sealed into the
+session cookie together with a fingerprint of the current code, so rotating
+`DEMO_ACCESS_CODE` downgrades existing team sessions to public. Cookies issued
+before this change carry no tier and are public. `INTEGRATION_API_KEY` bearer
+clients (the Eve agent) keep full access.
 
 ## Config and secrets
 
@@ -105,15 +133,16 @@ Inject values from the vault or the host's environment settings.
 
 | Variable | Purpose |
 | --- | --- |
-| `APP_SECRET`, `DEMO_ACCESS_CODE` | Production sessions and team access |
-| `OPEN_DEMO` | Open dashboard for the event; set `false` to require the access code |
+| `APP_SECRET` | Seals session cookies and result tokens (required in production) |
+| `DEMO_ACCESS_CODE` | Team code. Only a correct code gives a team session (live Eve activity, model clarify, configured catalog, seller contact gate). Unset in production means no one is team |
+| `OPEN_DEMO` | Default open: visitors without a code get a public session (synthetic replay and catalog). Set `false` to require the code for any session |
 | `APP_ORIGIN` | Exact public origin for request-origin validation |
 | `TYPESAFE_API_KEY` | Live Jev ranking (results are marked unscored without it) |
 | `AI_GATEWAY_API_KEY`, `CLARIFY_MODEL` | Model-assisted brief extraction |
 | `CATALOG_API_URL`, `CATALOG_API_KEY` | External inventory export |
 | `MARKETCHECK_API_KEY` | Optional live dealer inventory (server-side only) |
 | `DARA_API_URL`, `DARA_API_KEY` | Remote deal-intelligence jobs |
-| `OUTBOUND_CONTACT_ENABLED` | Defaults false; seller contact is disabled |
+| `OUTBOUND_CONTACT_ENABLED` | Defaults false; seller contact is disabled. Even when true, only team sessions can request contact |
 | `INTEGRATION_API_KEY` | Bearer access for trusted integration clients |
 | `EVE_AGENT_URL`, `EVE_API_KEY` | Server-side access to the Eve activity feed |
 
@@ -131,9 +160,13 @@ were triggered by explicit commit SHA; branch auto-deploy is unverified.
 
 ## Maintenance notes
 
-- **Post-event teardown:** set `OPEN_DEMO=false` (the dashboard Activity view
-  was open to visitors for judging), rotate the hackathon `TYPESAFE_API_KEY`
-  and Photon/Eve credentials, and decide whether to keep the Railway service
-  (paid tier) running.
+- **Post-event teardown:** the live Activity view is now team-only (by
+  `DEMO_ACCESS_CODE`); visitors see the synthetic recorded replay, so
+  `OPEN_DEMO` can stay open for a public demo. Make sure `DEMO_ACCESS_CODE` is
+  set (and rotate it if it was shared at the event; rotation also revokes
+  existing team sessions). Still rotate the hackathon `TYPESAFE_API_KEY` and
+  Photon/Eve credentials (`EVE_API_KEY`), and decide whether to keep the
+  Railway service (paid tier) running. Public search still spends Jev tokens
+  while `TYPESAFE_API_KEY` is set.
 - PR #2 (early spec and scraper plan) is stale; close it.
 - Once deployments are torn down, archive the repo.

@@ -83,3 +83,16 @@
 @media(max-width:1200px) { .activity-stage { padding: 13px 12px; } .activity-stage-status { display: none; } .activity-shortlist-heading { flex-direction: column; gap: 4px; } }
 @media(max-width:900px) { .activity-workspace .activity-grid { grid-template-columns: 1fr; } .activity-workspace .activity-evidence { grid-row: 1; } .activity-workspace .message-list { max-height: 340px; } .activity-pipeline { grid-template-columns: repeat(2, minmax(0, 1fr)); } .activity-stage:nth-child(3) { border-left: 0; } .activity-stage:nth-child(n+3) { border-top: 1px solid var(--line); } .activity-stage-status { display: inline; } }
 @media(max-width:560px) { .activity-workspace { margin-top: -9px; } .activity-work-header { align-items: flex-start; gap: 10px; } .activity-work-header h1 { font-size: 25px; } .activity-work-header .eyebrow { font-size: 7px; } .activity-header-actions { gap: 6px; flex-direction: column; align-items: flex-end; } .activity-header-actions .secondary { min-height: 26px; font-size: 9px; padding: 5px 8px; } .activity-header-actions .activity-status { font-size: 8px; padding: 5px 7px; } .activity-workspace .activity-toolbar { flex-direction: row; align-items: end; } .activity-workspace .activity-person-control { flex-basis: 115px; width: 115px; } .activity-workspace .activity-toolbar select { font-size: 11px; padding: 9px 8px; } .activity-context-line { font-size: 8px; gap: 8px; } .activity-proof-strip > .text-button { margin-left: 0; } .activity-workspace .activity-messages, .activity-workspace .activity-results { padding: 15px; } .activity-stage strong { font-size: 11px; } .activity-stage p { font-size: 10px; } .activity-stage-status { font-size: 8px; } }
+/* Public replay mode: synthetic recorded run, live view team-only. */
+.replay-banner { display: flex; gap: 12px; align-items: flex-start; padding: 13px 15px; margin-bottom: 14px; border: 1px solid var(--line-strong, #c9d1c4); border-radius: var(--radius-card, 10px); background: var(--surface, #f4f6ef); color: var(--ink); }
+.replay-banner > svg { flex: 0 0 auto; margin-top: 2px; }
+.replay-banner > div { flex: 1; min-width: 0; }
+.replay-banner strong { display: block; font-size: 13px; }
+.replay-banner p { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+.replay-banner > .secondary { flex: 0 0 auto; min-height: 34px; padding: 7px 11px; font-size: 11px; }
+.replay-code { display: flex; flex-wrap: wrap; gap: 9px; align-items: end; margin-top: 10px; }
+.replay-code label { display: grid; gap: 4px; font-size: 10px; min-width: 180px; }
+.replay-code input { padding: 8px 10px; font-size: 12px; }
+.replay-code .primary { min-height: 34px; padding: 7px 12px; font-size: 11px; }
+.replay-code-error { color: #a33b2b !important; }
+@media (max-width: 720px) { .replay-banner { flex-wrap: wrap; } .replay-banner > .secondary { width: 100%; } }

@@ -6,7 +6,7 @@ export type ParticipantFilter = ActivityParticipant | "unknown" | "";
 
 export type ActivityResponse = {
   source: "eve";
-  status: "live" | "unconfigured" | "unavailable";
+  status: "live" | "replay" | "unconfigured" | "unavailable";
   fetched_at: string;
   conversations: {
     id: string;

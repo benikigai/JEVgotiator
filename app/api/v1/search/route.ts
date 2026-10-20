@@ -3,13 +3,13 @@ import { NextResponse } from "next/server";
 import { briefSchema } from "@/lib/contracts";
 import { loadCatalog, filterCars } from "@/lib/catalog";
 import { rankCars } from "@/lib/jev";
-import { apiError, jsonBody, seal, session } from "@/lib/security";
+import { apiError, jsonBody, seal, sessionInfo } from "@/lib/security";
 export const maxDuration = 40;
 export async function POST(request: Request) {
   try {
-    const owner = session(request);
+    const { id: owner, tier } = sessionInfo(request);
     const brief = briefSchema.parse((await jsonBody(request)).brief);
-    const catalog = await loadCatalog();
+    const catalog = await loadCatalog({ syntheticOnly: tier !== "team" });
     const filtered = filterCars(catalog.cars, brief);
     const candidates = [...filtered.eligible].sort((a, b) => brief.priority === "low_mileage" ? (a.mileage ?? Infinity) - (b.mileage ?? Infinity) : (a.price ?? Infinity) - (b.price ?? Infinity)).slice(0, 30);
     const ranked = await rankCars(candidates, brief);

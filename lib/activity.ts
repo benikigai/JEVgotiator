@@ -1,4 +1,5 @@
 import { z } from "zod";
+import replayFixture from "../data/demo-activity.json";
 import { briefSchema, optimizationSimulationSchema, daraIntelligenceSchema, type Car, type JevTrace } from "./contracts";
 import { activityParticipants, type ActivityResponse } from "./activity-contract";
 
@@ -28,7 +29,7 @@ const optimizationSchema = z.object({
   warning: short.nullable(), simulation: optimizationSimulationSchema.optional(), intelligence: daraIntelligenceSchema.optional(),
 });
 const activitySchema = z.object({
-  source: z.literal("eve"), status: z.literal("live"), fetched_at: short,
+  source: z.literal("eve"), status: z.enum(["live", "replay"]), fetched_at: short,
   conversations: z.array(z.object({ id: z.string().regex(/^wrun_[A-Za-z0-9]{26}$/), title: short, channel: z.enum(["photon", "http", "unknown"]), status: short, created_at: short.optional(), updated_at: short, participant_label: z.enum(activityParticipants).optional().catch(undefined) })).max(30),
   selected_id: short.nullable(),
   messages: z.array(z.object({ id: short, role: z.enum(["user", "assistant"]), text: short, created_at: short })).max(100),
@@ -50,8 +51,10 @@ function safeStrings<T>(value: T): T {
   return value;
 }
 
-export function normalizeActivity(payload: unknown): ActivityResponse {
+export function normalizeActivity(payload: unknown, expected: "live" | "replay" = "live"): ActivityResponse {
   const parsed = safeStrings(activitySchema.parse(payload));
+  // The live Eve feed can never present itself as a replay, and the replay fixture can never claim to be live.
+  if (parsed.status !== expected) throw new Error("Unexpected activity status.");
   if (parsed.selected_id && !parsed.conversations.some((conversation) => conversation.id === parsed.selected_id)) throw new Error("Activity selection is not in the conversation list.");
   const search = parsed.search;
   return {
@@ -66,11 +69,11 @@ export function normalizeActivity(payload: unknown): ActivityResponse {
           trim: null, body_type: null, fuel_type: null, photos: [], description: "",
           accident_history: null, maintenance_history: null, title_status: "unknown",
           seller: { id: "", name: "Not included in the activity snapshot", type: "unknown", contact_available: false },
-          source: "Eve recorded search result", observed_at: "", status: "unknown", available_from: null,
+          source: parsed.status === "replay" ? "Recorded demo run (synthetic)" : "Eve recorded search result", observed_at: "", status: "unknown", available_from: null,
         } as Car,
       })),
       ranking: { ...search.ranking, input_tokens: search.ranking.input_tokens ?? 0, trace: search.ranking.trace as JevTrace | undefined },
-      catalog: { ...search.catalog, source: "Eve recorded search result", fetched_at: search.created_at },
+      catalog: { ...search.catalog, source: parsed.status === "replay" ? "Recorded demo run (synthetic)" : "Eve recorded search result", fetched_at: search.created_at },
     } : null,
     optimization: parsed.optimization ? { ...parsed.optimization, quotes: [], events: [], provider_job_id: null } : null,
   };
@@ -109,4 +112,27 @@ export async function readActivity(conversationId?: string | null): Promise<Acti
   } catch {
     return emptyActivity("unavailable", "Eve activity could not be read. No conversation or search result has been substituted.");
   }
+}
+
+const replayRunSchema = z.object({ messages: z.unknown(), tools: z.unknown(), search: z.unknown(), optimization: z.unknown() });
+const replayFixtureSchema = z.object({
+  source: z.literal("eve"), status: z.literal("replay"), fetched_at: z.string(), warning: z.string().nullable(),
+  conversations: z.array(z.object({ id: z.string() }).passthrough()).min(1).max(30),
+  runs: z.record(z.string(), replayRunSchema),
+});
+export type ReplayFixture = z.infer<typeof replayFixtureSchema>;
+
+/** Builds one replay activity response from the committed synthetic fixture. Never touches the network. */
+export function replayActivityFrom(fixture: unknown, conversationId?: string | null): ActivityResponse {
+  if (conversationId && !/^wrun_[A-Za-z0-9]{26}$/.test(conversationId)) throw new Error("Invalid conversation ID.");
+  const replay = replayFixtureSchema.parse(fixture);
+  const selected = conversationId ?? replay.conversations[0].id;
+  const run = replay.runs[selected];
+  if (!run || !replay.conversations.some((conversation) => conversation.id === selected)) throw new Error("Invalid conversation ID.");
+  const { runs: _runs, ...header } = replay;
+  return normalizeActivity({ ...header, selected_id: selected, ...run }, "replay");
+}
+
+export function readReplayActivity(conversationId?: string | null): ActivityResponse {
+  return replayActivityFrom(replayFixture, conversationId);
 }

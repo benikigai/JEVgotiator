@@ -17,6 +17,9 @@ beforeEach(() => {
   process.env.DARA_API_URL = "https://dara.example/jobs";
   delete process.env.CATALOG_API_URL;
   delete process.env.APP_ORIGIN;
+  // Local development without a configured code is the team tier; tier tests set a code explicitly.
+  delete process.env.DEMO_ACCESS_CODE;
+  delete process.env.OPEN_DEMO;
   fetchCalls = 0;
   globalThis.fetch = async () => { fetchCalls++; throw new Error("Unexpected outbound request in a blocked-action test"); };
 });
